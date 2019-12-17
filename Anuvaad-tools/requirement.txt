@@ -1,0 +1,11 @@
+Click==7.0
+constants==0.6.0
+Flask==1.1.1
+itsdangerous==1.1.0
+Jinja2==2.10.3
+kafka-python==1.4.7
+MarkupSafe==1.1.1
+nltk==3.4.5
+PyYAML==5.2
+six==1.13.0
+Werkzeug==0.16.0
