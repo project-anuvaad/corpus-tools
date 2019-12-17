@@ -4,6 +4,7 @@ from utils.anuvaad_tools_logger import getLogger
 from utils.timeutils import get_current_time
 from kafka_utils.producer import get_producer
 from sentence_extractor.utils import write_to_csv
+import sentence_extractor.extractor_constants as Constants
 import csv
 import sys
 import re
@@ -16,7 +17,7 @@ log = getLogger()
 
 def start_token_extraction(configFilePath, paragraphFilePath, processId):
     start_time = get_current_time()
-    config = Config_reader.read_config_file(configFilePath)
+    config = Config_reader.read_config_file(Constants.BASE_PATH_TOOL_1 + processId+'/'+configFilePath)
     config_name = config[Constants.CONFIG_NAME]
     log.info("start_token_extraction : process started for processId == " + str(processId) + " with config name == " +
              str(config_name) + " at time == " + str(start_time))
@@ -30,9 +31,9 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId):
     add_negative_tokens = config[Constants.ADD_NEGATIVE_TOKENS]
     insertion_order = config[Constants.TOKEN_INSERTION_ORDER]
 
-    tokens = extract_tokens(regex_rules_for_token_extraction, paragraphFilePath)
+    tokens = extract_tokens(regex_rules_for_token_extraction, Constants.BASE_PATH_TOOL_1 + processId+'/'+paragraphFilePath)
     tokens = apply_length_rules(tokens)
-    filename = write_to_csv(tokens, processId, specific_file_header,Constants.BASE_PATH_TOOL_1)
+    filename = write_to_csv(tokens, processId, specific_file_header, Constants.BASE_PATH_TOOL_1)
     end_time = get_current_time()
     res = {'path': 'tokenize',
            'data': {
