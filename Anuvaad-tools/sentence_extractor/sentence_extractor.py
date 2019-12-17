@@ -6,7 +6,7 @@ from sentence_extractor.utils import write_to_csv
 from kafka_utils.producer import get_producer
 import sentence_extractor.extractor_constants as Constants
 import csv
-
+from  sentence_extractor import anuvaad_exceptions  as EXP
 log = getLogger()
 
 
@@ -38,6 +38,8 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
     except Exception as e:
         log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
                   str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
+
+
     end_time = get_current_time()
     log.info('start_sentence_extraction : ended at == ' + str(end_time))
     total_time = end_time - start_time
@@ -68,7 +70,7 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
 
 def load_tokenizer(tokens, sentence_end_characters):
     tokenizer = get_tokenizer_english_pickle()
-    tokenizer = update_english_pickle_with_tokens(tokens)
+    tokenizer = update_english_pickle_with_tokens(tokenizer, tokens)
     return tokenizer
 
 

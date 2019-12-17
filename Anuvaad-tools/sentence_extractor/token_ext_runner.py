@@ -1,6 +1,7 @@
 from kafka_utils.consumer import get_consumer
 from utils.anuvaad_tools_logger import getLogger
 from sentence_extractor.token_extractor import start_token_extraction
+from sentence_extractor import extractor_constants as Constants
 
 TOPIC_TOKEN_EXTRACTOR = 'tokenext'
 log = getLogger()
@@ -13,10 +14,10 @@ def extract_tokens_thread():
         for msg in consumer:
             try:
                 log.info('extract_tokens_thread : message for queue == ' + str(msg))
-                message = msg.value['data']
-                configFilePath = message['config_file_location']
-                paragraphFilePath = message['csv_file_location']
-                processId = message['session_id']
+                message = msg.value[Constants.DATA]
+                configFilePath = message[Constants.CONFIG_FILE_LOCATION]
+                paragraphFilePath = message[Constants.PARAGRAPH_FILE_LOCATION]
+                processId = message[Constants.SESSION_ID]
                 # configFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/tool_1_config.yaml'
                 # paragraphFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/raw_para.csv'
                 start_token_extraction(configFilePath, paragraphFilePath, processId)
