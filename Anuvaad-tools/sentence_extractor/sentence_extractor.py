@@ -96,6 +96,7 @@ def read_data_from_csv(filePath):
         data = csv.reader(filePath)
         for row in data:
             text = row[0]
+            log.info('read_data_from_csv : text found ' + text)
             tokens.append(text)
-    file.close()
+        file.close()
     return tokens
