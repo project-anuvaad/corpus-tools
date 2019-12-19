@@ -69,7 +69,8 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
             return all_sentences
         sentences = tokenizer.tokenize(text)
         log.info('extract_sentences_from_paragraphs :  sentences found ' + str(len(sentences)))
-        all_sentences = all_sentences.__add__(sentences)
+        for sentence in sentences:
+            all_sentences.append(sentence)
     end_time = get_current_time()
     log.info('extract_sentences_from_paragraphs :  total sentences found ' + str(len(all_sentences)))
     log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
