@@ -93,7 +93,7 @@ def load_tokens(config, posTokenFilePath, negTokenFilePath, processId):
 def read_data_from_csv(filePath):
     tokens = []
     with open(filePath, 'rt') as file:
-        data = csv.reader(filePath)
+        data = csv.reader(file)
         for row in data:
             text = row[0]
             log.info('read_data_from_csv : text found ' + text)
