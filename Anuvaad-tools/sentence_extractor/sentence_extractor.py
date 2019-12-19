@@ -62,7 +62,8 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
         if text == '':
             return all_sentences
         sentences = tokenizer.tokenize(text)
-        all_sentences.__add__(sentences)
+        for sentence in sentences:
+            all_sentences.append(sentence)
     end_time = get_current_time()
     log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
     return all_sentences
@@ -88,7 +89,7 @@ def load_tokens(config, posTokenFilePath, negTokenFilePath, processId):
 def read_data_from_csv(filePath):
     tokens = []
     with open(filePath, 'rt') as file:
-        data = csv.reader(filePath)
+        data = csv.reader(file)
         for row in data:
             text = row[0]
             tokens.append(text)
