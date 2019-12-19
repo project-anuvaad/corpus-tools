@@ -19,11 +19,11 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
     specific_file_header = config[Constants.SFILE_HEADER]
     tokenizer = load_tokenizer(tokens, sentence_end_characters)
     paragraphs = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
-    log.info('start_sentence_extraction : paragraphs found == ' + len(paragraphs))
+    log.info('start_sentence_extraction : paragraphs found == ' + str(len(paragraphs)))
     sentences = extract_sentences_from_paragraphs(tokenizer, paragraphs)
-    log.info('start_sentence_extraction : sentences found == ' + len(sentences))
+    log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
     all_unique_sentences = remove_duplicates(sentences)  ##set
-    log.info('start_sentence_extraction : unique sentences found == ' + len(all_unique_sentences))
+    log.info('start_sentence_extraction : unique sentences found == ' + str(len(all_unique_sentences)))
     filename = write_to_csv(all_unique_sentences, processId, specific_file_header, Constants.BASE_PATH_TOOL_1)
     res = {'path': 'sentences',
            'data': {
