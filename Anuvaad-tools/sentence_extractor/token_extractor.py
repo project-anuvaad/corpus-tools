@@ -15,7 +15,7 @@ csv.field_size_limit(maxInt)
 log = getLogger()
 
 
-def start_token_extraction(configFilePath, paragraphFilePath, processId):
+def start_token_extraction(configFilePath, paragraphFilePath, processId, workspace):
     start_time = get_current_time()
     config = Config_reader.read_config_file(Constants.BASE_PATH_TOOL_1 + processId+'/'+configFilePath)
     config_name = config[Constants.CONFIG_NAME]
@@ -33,7 +33,7 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId):
 
     tokens = extract_tokens(regex_rules_for_token_extraction, Constants.BASE_PATH_TOOL_1 + processId+'/'+paragraphFilePath)
     tokens = apply_length_rules(tokens)
-    filename = write_to_csv(tokens, processId, specific_file_header, Constants.BASE_PATH_TOOL_1)
+    filename = write_to_csv(tokens, processId, specific_file_header, Constants.BASE_PATH_TOOL_1, workspace)
     #For now make blank csv for negative token
     filename_negative = write_to_csv(set(), processId, 'Negative-Token', Constants.BASE_PATH_TOOL_1)
     end_time = get_current_time()

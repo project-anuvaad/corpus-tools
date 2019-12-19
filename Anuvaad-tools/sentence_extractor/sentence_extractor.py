@@ -10,7 +10,8 @@ from  sentence_extractor import anuvaad_exceptions  as EXP
 log = getLogger()
 
 
-def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId):
+def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId,
+                              workspace):
     start_time = get_current_time()
     log.info('start_sentence_extraction : started at == ' + str(start_time))
     config = read_config_file(Constants.BASE_PATH_TOOL_1 + processId + "/" + configFilePath)
@@ -24,8 +25,8 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
     log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
     all_unique_sentences = remove_duplicates(sentences)  ##set
     log.info('start_sentence_extraction : unique sentences found == ' + str(len(all_unique_sentences)))
-    filename = write_to_csv(all_unique_sentences, processId, specific_file_header + Constants.SENTENCES,
-                            Constants.BASE_PATH_TOOL_1)
+    filename = write_to_csv(all_unique_sentences, processId, specific_file_header + '_' + Constants.SENTENCES,
+                            Constants.BASE_PATH_TOOL_1, workspace)
     res = {'path': 'sentences',
            'data': {
                'processId': processId,

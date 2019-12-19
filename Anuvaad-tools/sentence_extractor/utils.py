@@ -2,8 +2,8 @@ import sentence_extractor.extractor_constants as CONSTANTS
 import csv
 
 
-def write_to_csv(data, processId, header, path):
-    filename = processId + header + '.csv'
+def write_to_csv(data, processId, header, path, workspace):
+    filename = workspace + '_' + header + '_' + processId + '.csv'
     complete_file_path = path + processId + '/' + filename
     with open(complete_file_path, CONSTANTS.CSV_WRITE) as file:
         writer = csv.writer(file)
