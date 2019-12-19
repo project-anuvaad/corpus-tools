@@ -64,14 +64,14 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
     log.info('extract_sentences_from_paragraphs :  started at = ' + str(start_time))
     all_sentences = []
     for text in paragraphs:
-        if text == '':
-            end_time = get_current_time()
-            log.info('extract_sentences_from_paragraphs :  total sentences found ' + str(len(all_sentences)))
-            log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
-            return all_sentences
-        sentences = tokenizer.tokenize(text)
-        log.info('extract_sentences_from_paragraphs :  sentences found ' + str(len(sentences)))
-        all_sentences = all_sentences.__add__(sentences)
+        if text != '':
+            # end_time = get_current_time()
+            # log.info('extract_sentences_from_paragraphs :  total sentences found ' + str(len(all_sentences)))
+            # log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
+            # return all_sentences
+            sentences = tokenizer.tokenize(text)
+            log.info('extract_sentences_from_paragraphs :  sentences found ' + str(len(sentences)))
+            all_sentences = all_sentences.__add__(sentences)
     end_time = get_current_time()
     log.info('extract_sentences_from_paragraphs :  total sentences found ' + str(len(all_sentences)))
     log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
