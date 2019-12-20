@@ -58,12 +58,14 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId, workspa
         except Exception as e:
             log.info("start_token_extraction : ERROR  OCCURRED while sending the message to topic == "
                     + str(Constants.EXTRACTOR_RESPONSE) + " ERROR is == " + str(e))
+            producer = get_producer()
             producer.send(topic=Constants.ERROR_TOPIC, value=message)
             producer.flush()
             producer.close()
     except Exception as e:
         log.info("start_token_extraction : ERROR  OCCURRED while sending the message to topic == "
                     + str(Constants.EXTRACTOR_RESPONSE) + " ERROR is == " + str(e))
+        producer = get_producer()
         producer.send(topic=Constants.ERROR_TOPIC, value=message)
         producer.flush()
         producer.close()
