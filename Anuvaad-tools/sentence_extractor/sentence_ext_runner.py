@@ -21,7 +21,7 @@ def extract_sentences_thread():
                 paragraphFilePath = message[Constants.PARAGRAPH_FILE_LOCATION]
                 processId = message[Constants.SESSION_ID]
 
-                start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId)
+                start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId, message)
                 log.info('extract_sentences_thread : Ended for processId == '+str(processId))
             except Exception as e:
                 log.error('extract_sentences_thread : ERROR OCCURRED for processId == ' +

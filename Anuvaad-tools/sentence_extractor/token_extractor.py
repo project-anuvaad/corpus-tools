@@ -15,7 +15,7 @@ csv.field_size_limit(maxInt)
 log = getLogger()
 
 
-def start_token_extraction(configFilePath, paragraphFilePath, processId):
+def start_token_extraction(configFilePath, paragraphFilePath, processId, message):
     start_time = get_current_time()
     config = Config_reader.read_config_file(Constants.BASE_PATH_TOOL_1 + processId+'/'+configFilePath)
     config_name = config[Constants.CONFIG_NAME]
@@ -57,6 +57,9 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId):
     except Exception as e:
         log.info("start_token_extraction : ERROR  OCCURRED while sending the message to topic == "
                  + str(Constants.EXTRACTOR_RESPONSE) + " ERROR is == " + str(e))
+        producer.send(topic=Constants.ERROR_TOPIC, value=message)
+        producer.flush()
+        producer.close()
 
 
 # paragraph File will be a csv file

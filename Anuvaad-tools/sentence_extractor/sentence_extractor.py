@@ -10,7 +10,7 @@ from  sentence_extractor import anuvaad_exceptions  as EXP
 log = getLogger()
 
 
-def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId):
+def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId, message):
     start_time = get_current_time()
     log.info('start_sentence_extraction : started at == ' + str(start_time))
     config = read_config_file(Constants.BASE_PATH_TOOL_1 + processId + "/" + configFilePath)
@@ -42,6 +42,9 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
     except Exception as e:
         log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
                   str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
+        producer = get_producer()
+        producer.send(topic=Constants.ERROR_TOPIC, value=message)
+        producer.flush()
 
 
     end_time = get_current_time()
