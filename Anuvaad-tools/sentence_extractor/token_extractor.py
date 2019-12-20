@@ -36,7 +36,7 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId, workspa
         tokens = apply_length_rules(tokens)
         filename = write_to_csv(tokens, processId, specific_file_header, Constants.BASE_PATH_TOOL_1, workspace)
         #For now make blank csv for negative token
-        filename_negative = write_to_csv(set(), processId, 'Negative-Token', Constants.BASE_PATH_TOOL_1)
+        filename_negative = write_to_csv(set(), processId, 'Negative-Token', Constants.BASE_PATH_TOOL_1, workspace)
         end_time = get_current_time()
         res = {'path': 'tokenize',
             'data': {
