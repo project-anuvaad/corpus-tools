@@ -11,47 +11,54 @@ log = getLogger()
 
 
 def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath, paragraphFilePath, processId, workspace, message):
-    start_time = get_current_time()
-    log.info('start_sentence_extraction : started at == ' + str(start_time))
-    config = read_config_file(Constants.BASE_PATH_TOOL_1 + processId + "/" + configFilePath)
-    tokens = load_tokens(config, posTokenFilePath, negTokenFilePath, processId)
-    sentence_end_characters = config[Constants.SEC]
-    specific_file_header = config[Constants.SFILE_HEADER]
-    tokenizer = load_tokenizer(tokens, sentence_end_characters)
-    paragraphs = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
-    log.info('start_sentence_extraction : paragraphs found == ' + str(len(paragraphs)))
-    sentences = extract_sentences_from_paragraphs(tokenizer, paragraphs)
-    log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
-    all_unique_sentences = remove_duplicates(sentences)  ##set
-    log.info('start_sentence_extraction : unique sentences found == ' + str(len(all_unique_sentences)))
-    filename = write_to_csv(all_unique_sentences, processId, specific_file_header + '_' + Constants.SENTENCES,
-                            Constants.BASE_PATH_TOOL_1, workspace)
-    res = {'path': 'sentences',
-           'data': {
-               'processId': processId,
-               'sentencesFile': filename,
-               'sentencesCount': len(all_unique_sentences)
-           }}
     try:
-        log.info('start_sentence_extraction : trying to send message to queue after sentences extraction')
-        log.info('start_sentence_extraction : message == ' + str(res))
-        producer = get_producer()
-        producer.send(topic=Constants.EXTRACTOR_RESPONSE, value=res)
-        producer.flush()
-        log.info('start_sentence_extraction : message sent to queue after sentences extraction')
+        start_time = get_current_time()
+        log.info('start_sentence_extraction : started at == ' + str(start_time))
+        config = read_config_file(Constants.BASE_PATH_TOOL_1 + processId + "/" + configFilePath)
+        tokens = load_tokens(config, posTokenFilePath, negTokenFilePath, processId)
+        sentence_end_characters = config[Constants.SEC]
+        specific_file_header = config[Constants.SFILE_HEADER]
+        tokenizer = load_tokenizer(tokens, sentence_end_characters)
+        paragraphs = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
+        log.info('start_sentence_extraction : paragraphs found == ' + str(len(paragraphs)))
+        sentences = extract_sentences_from_paragraphs(tokenizer, paragraphs)
+        log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
+        all_unique_sentences = remove_duplicates(sentences)  ##set
+        log.info('start_sentence_extraction : unique sentences found == ' + str(len(all_unique_sentences)))
+        filename = write_to_csv(all_unique_sentences, processId, specific_file_header + '_' + Constants.SENTENCES,
+                                Constants.BASE_PATH_TOOL_1, workspace)
+        res = {'path': 'sentences',
+            'data': {
+                'processId': processId,
+                'sentencesFile': filename,
+                'sentencesCount': len(all_unique_sentences)
+            }}
+        try:
+            log.info('start_sentence_extraction : trying to send message to queue after sentences extraction')
+            log.info('start_sentence_extraction : message == ' + str(res))
+            producer = get_producer()
+            producer.send(topic=Constants.EXTRACTOR_RESPONSE, value=res)
+            producer.flush()
+            log.info('start_sentence_extraction : message sent to queue after sentences extraction')
+        except Exception as e:
+            log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
+                    str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
+            producer = get_producer()
+            producer.send(topic=Constants.ERROR_TOPIC, value=message)
+            producer.flush()
+
+
+        end_time = get_current_time()
+        log.info('start_sentence_extraction : ended at == ' + str(end_time))
+        total_time = end_time - start_time
+        log.info('start_sentence_extraction : total time elapsed == '+str(total_time) + ' for proceessId == '
+                + str(processId))
     except Exception as e:
         log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
-                  str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
+                    str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
         producer = get_producer()
         producer.send(topic=Constants.ERROR_TOPIC, value=message)
         producer.flush()
-
-
-    end_time = get_current_time()
-    log.info('start_sentence_extraction : ended at == ' + str(end_time))
-    total_time = end_time - start_time
-    log.info('start_sentence_extraction : total time elapsed == '+str(total_time) + ' for proceessId == '
-             + str(processId))
 
 
 def remove_duplicates(sentences):
