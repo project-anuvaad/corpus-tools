@@ -18,9 +18,10 @@ def extract_tokens_thread():
                 configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                 paragraphFilePath = message[Constants.PARAGRAPH_FILE_LOCATION]
                 processId = message[Constants.SESSION_ID]
+                workspace = message[Constants.TITLE]
                 # configFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/tool_1_config.yaml'
                 # paragraphFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/raw_para.csv'
-                start_token_extraction(configFilePath, paragraphFilePath, processId, message)
+                start_token_extraction(configFilePath, paragraphFilePath, processId, workspace, message)
                 log.info('extract_tokens_thread : Ended for processId == '+str(processId))
             except Exception as e:
                 log.error('extract_tokens_thread : ERROR OCCURRED ERROR is == ' + str(e))
