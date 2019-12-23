@@ -5,6 +5,7 @@ from utils.timeutils import get_current_time
 from kafka_utils.producer import get_producer
 from sentence_extractor.utils import write_to_csv
 import sentence_extractor.extractor_constants as Constants
+import sentence_extractor.utils as Utils
 import csv
 import sys
 import re
@@ -33,10 +34,18 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId, workspa
         insertion_order = config[Constants.TOKEN_INSERTION_ORDER]
 
         tokens = extract_tokens(regex_rules_for_token_extraction, Constants.BASE_PATH_TOOL_1 + processId+'/'+paragraphFilePath)
-        tokens = apply_length_rules(tokens)
+        tokens = apply_length_rules(tokens, token_length_min, token_length_max)
+
+
+        negative_tokens = Utils.read_from_csv(Constants.NEGATIVE_TOKEN_FILE_PATH)
+        if remove_negative_tokens :
+            log.info('start_token_extraction : removing negative tokens')
+            negative_tokens = negative_tokens.__add__(add_negative_tokens)
+            tokens = [x for x in tokens if x not in negative_tokens]
+            log.info('start_token_extraction : negative tokens removed')
+
         filename = write_to_csv(tokens, processId, specific_file_header, Constants.BASE_PATH_TOOL_1, workspace)
-        #For now make blank csv for negative token
-        filename_negative = write_to_csv(set(), processId, 'Negative-Token', Constants.BASE_PATH_TOOL_1, workspace)
+        filename_negative = write_to_csv(negative_tokens, processId, 'Negative-Token', Constants.BASE_PATH_TOOL_1, workspace)
         end_time = get_current_time()
         res = {'path': 'tokenize',
             'data': {
@@ -44,7 +53,7 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId, workspa
                 'tokenFile': filename,
                 'tokenCount': len(tokens),
                 'negativeTokenFile': filename_negative,
-                'negativeTokenCount': 0
+                'negativeTokenCount': len(negative_tokens)
             }}
         try:
             log.info('start_token_extraction : trying to send message to queue after token extraction')
@@ -95,12 +104,12 @@ def apply_regex_rules(text, regexRules):
     return all_tokens
 
 
-def apply_length_rules(tokens):
+def apply_length_rules(tokens, min_length, max_length):
     all_tokens = set()
     for token in tokens:
-        if token[-1] == ".":
+        if token[-1] == "." and min_length < token.__len__() < max_length:
             token = token[0: -1]
-            if not token.__contains__('.') and token.__len__() < 5:
+            if not token.__contains__('.') and token.__len__() < 4:
                 all_tokens.add(token)
             elif token.__contains__('.'):
                 all_tokens.add(token)

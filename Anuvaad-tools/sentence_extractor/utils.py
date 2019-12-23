@@ -11,3 +11,14 @@ def write_to_csv(data, processId, header, path, workspace):
             writer.writerow([line])
         file.close()
     return filename
+
+
+def read_from_csv(filepath):
+    file_data = []
+    with open(filepath, CONSTANTS.CSV_RT) as file:
+        data = csv.reader(file)
+        for row in data:
+            text = row[0]
+            file_data.append(text)
+        file.close()
+    return file_data
