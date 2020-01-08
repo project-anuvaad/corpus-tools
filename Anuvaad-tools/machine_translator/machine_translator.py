@@ -297,6 +297,7 @@ def create_target_sentence(sentence, filename):
 def merge_files(filenames, processId, basepath):
     log.info('merge_files : started')
     merged_file_name = basepath + processId + '_merged.csv'
+
     try:
         with open(merged_file_name, Constants.CSV_WRITE) as merge:
             writer = csv.writer(merge)
@@ -310,7 +311,7 @@ def merge_files(filenames, processId, basepath):
                 source.close()
         merge.close()
         log.info('merge_files : ended')
-        return merged_file_name
+        return processId + '_merged.csv'
 
     except Exception as e:
         log.error('merge_files : Error occurred while merging files for process_id == ' + str(processId))
