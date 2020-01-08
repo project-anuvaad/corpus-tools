@@ -28,8 +28,14 @@ def machine_translation_thread():
                                           None, domain, use_latest)
                 log.info('machine_translation_thread : Ended for processId == ' + str(processId))
             except Exception as e:
-                log.error('machine_translation_thread : ERROR OCCURRED ERROR is == ' + str(e))
 
+                log.error('machine_translation_thread : ERROR OCCURRED ERROR is == ' + str(e))
+                data = {'path': 'mt',
+                 'data': {
+                     'status': False,
+                     'processId': processId
+                 }}
+                send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)
     except Exception as e:
         log.error('machine_translation_thread : Error occurred while getting consumer for topic == ' +
                   str(Constants.TOPIC_MACHINE_TRANSLATION) + ' ERROR is == ' + str(e))
