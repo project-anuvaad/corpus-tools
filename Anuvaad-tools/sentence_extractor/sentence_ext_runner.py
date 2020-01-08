@@ -1,7 +1,7 @@
 from kafka_utils.consumer import get_consumer
 from utils.anuvaad_tools_logger import getLogger
 from sentence_extractor.sentence_extractor import start_sentence_extraction
-from sentence_extractor import extractor_constants as Constants
+from utils import anuvaad_constants as Constants
 
 TOPIC_TOKEN_EXTRACTOR = 'sentencesext'
 log = getLogger()

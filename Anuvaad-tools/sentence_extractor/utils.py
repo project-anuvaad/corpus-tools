@@ -1,4 +1,4 @@
-import sentence_extractor.extractor_constants as CONSTANTS
+import utils.anuvaad_constants as CONSTANTS
 import csv
 
 

@@ -3,10 +3,10 @@ from utils.timeutils import get_current_time
 from sentence_extractor.extractor_config_reader import read_config_file
 from sentence_extractor.custom_nltk_tokenizer import get_tokenizer_english_pickle,update_english_pickle_with_tokens
 from sentence_extractor.utils import write_to_csv
-from kafka_utils.producer import get_producer
-import sentence_extractor.extractor_constants as Constants
+from kafka_utils.producer import send_to_kafka
+import utils.anuvaad_constants as Constants
 import csv
-from  sentence_extractor import anuvaad_exceptions  as EXP
+
 log = getLogger()
 
 
@@ -36,16 +36,15 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
         try:
             log.info('start_sentence_extraction : trying to send message to queue after sentences extraction')
             log.info('start_sentence_extraction : message == ' + str(res))
-            producer = get_producer()
-            producer.send(topic=Constants.EXTRACTOR_RESPONSE, value=res)
-            producer.flush()
+
+            send_to_kafka(topic=Constants.EXTRACTOR_RESPONSE, value=res)
             log.info('start_sentence_extraction : message sent to queue after sentences extraction')
         except Exception as e:
             log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
                     str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
-            producer = get_producer()
-            producer.send(topic=Constants.ERROR_TOPIC, value=message)
-            producer.flush()
+
+            send_to_kafka(topic=Constants.ERROR_TOPIC, value=message)
+
 
 
         end_time = get_current_time()
@@ -56,9 +55,8 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
     except Exception as e:
         log.error('start_sentence_extraction : Error coccured while sending the message to topic == ' +
                     str(Constants.EXTRACTOR_RESPONSE) + ' with ERROR == ' + str(e))
-        producer = get_producer()
-        producer.send(topic=Constants.ERROR_TOPIC, value=message)
-        producer.flush()
+
+        send_to_kafka(topic=Constants.ERROR_TOPIC, value=message)
 
 
 def remove_duplicates(sentences):
