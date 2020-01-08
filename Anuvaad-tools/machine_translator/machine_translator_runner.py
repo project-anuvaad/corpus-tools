@@ -69,7 +69,7 @@ def translation_fetcher_and_writer_thread():
                             Constants.STATUS: Constants.SUCCESS,
                             Constants.PROCESS_ID: process_id
                         }
-                        data = {Constants.DATA: message}
+                        data = {Constants.PATH: 'mt', Constants.DATA: message}
                         send_to_kafka(topic=Constants.TOPIC_SENTENCES_PROCESSING, value=data)
                     else:
                         body = {Constants.COMPLETE: received + 1}
