@@ -9,3 +9,5 @@ nltk==3.4.5
 PyYAML==5.2
 six==1.13.0
 Werkzeug==0.16.0
+py4j==0.10.7
+pyspark==2.4.4
