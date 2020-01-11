@@ -1,0 +1,18 @@
+Sentence Extractor aka TOOL-1.
+Takes two input:
+    1. YAML Configuration file for defining rules of extraction process.
+    2. Input Texts from which sentences will be extracted.
+
+
+    TODO:
+        1. Read config file and Source file.
+        2. Extract all the rules mentioned in YAML file.
+        3. Extract Tokens from source file.
+        4. Remove duplicates from extracted tokens.
+        5. Remove legit delimiters.
+        7. Add non-legit delimiters.
+        6. Sort them in mentioned order.
+        7. Initialize Tokenizer.
+        8. Extract Sentences.
+        9. Remove Duplicates.
+        10. End process.
