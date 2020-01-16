@@ -26,7 +26,7 @@ def extract_sentences_thread():
                 log.info('extract_sentences_thread : Ended for processId == '+str(processId))
             except Exception as e:
                 log.error('extract_sentences_thread : ERROR OCCURRED for processId == ' +
-                          str(processId) + 'ERROR is == ' + str(e))
+                           'ERROR is == ' + str(e))
 
     except Exception as e:
         log.error('extract_sentences_thread : Error occurred while getting consumer for topic == '
