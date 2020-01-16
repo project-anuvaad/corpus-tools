@@ -1,5 +1,7 @@
 import utils.anuvaad_constants as CONSTANTS
 import csv
+maxInt = sys.maxsize
+csv.field_size_limit(maxInt)
 
 
 def write_to_csv(data, processId, header, path, workspace):

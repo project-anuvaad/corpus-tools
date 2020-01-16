@@ -6,6 +6,9 @@ from sentence_extractor.utils import write_to_csv
 from kafka_utils.producer import send_to_kafka
 import utils.anuvaad_constants as Constants
 import csv
+import sys
+maxInt = sys.maxsize
+csv.field_size_limit(maxInt)
 
 log = getLogger()
 
