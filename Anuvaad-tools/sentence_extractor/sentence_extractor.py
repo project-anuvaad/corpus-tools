@@ -74,6 +74,7 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
     log.info('extract_sentences_from_paragraphs : contains total line == ' + str(len(paragraphs)))
     for text in paragraphs:
         if text != '':
+            line_in_file = line_in_file + 1
             log.info('extract_sentences_from_paragraphs :  line number processing in file == ' + str(line_in_file)
                      + ' out of '+str(len(paragraphs)))
             sentences = tokenizer.tokenize(text)
