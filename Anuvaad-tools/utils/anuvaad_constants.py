@@ -27,7 +27,8 @@ NEGATIVE_TOKEN_FILE = 'negative_token_file'
 PARAGRAPH_FILE_LOCATION = 'paragraph_file_location'
 SENTENCES = 'sentences'
 NEGATIVE_TOKEN_FILE_PATH = 'resources/negative_tokens.csv'
-
+EXCLUSIVE_TOKENS = 'exclusive_tokens'
+MIN_SEN_LENGTH = 'min_sentence_length'
 
 SOURCE_FILES = 'source_files'
 TARGET_LANGUAGE = 'target_language'

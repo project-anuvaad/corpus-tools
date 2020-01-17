@@ -21,12 +21,13 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
         tokens = load_tokens(config, posTokenFilePath, negTokenFilePath, processId)
         sentence_end_characters = config[Constants.SEC]
         specific_file_header = config[Constants.SFILE_HEADER]
-        tokenizer = load_tokenizer(tokens, sentence_end_characters)
+        tokenizer = load_tokenizer(tokens, config, sentence_end_characters)
         paragraphs = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
         log.info('start_sentence_extraction : paragraphs found == ' + str(len(paragraphs)))
         sentences = extract_sentences_from_paragraphs(tokenizer, paragraphs)
         log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
         all_unique_sentences = remove_duplicates(sentences)  ##set
+        all_unique_sentences = apply_sentence_len_rule(all_unique_sentences, config)
         log.info('start_sentence_extraction : unique sentences found == ' + str(len(all_unique_sentences)))
         filename = write_to_csv(all_unique_sentences, processId, specific_file_header + '_' + Constants.SENTENCES,
                                 Constants.BASE_PATH_TOOL_1, workspace)
@@ -62,6 +63,15 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
         send_to_kafka(topic=Constants.ERROR_TOPIC, value=message)
 
 
+def apply_sentence_len_rule(sentences, config):
+    filtered = list()
+    min_length = config[Constants.MIN_SEN_LENGTH]
+    for sentence in sentences:
+        if len(sentence) > min_length:
+            filtered.append(sentence)
+    return filtered
+
+
 def remove_duplicates(sentences):
     unique = set()
     for sentence in sentences:
@@ -78,6 +88,7 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
     for text in paragraphs:
         if text != '':
             line_in_file = line_in_file + 1
+            text = preprocess_paragraph(text)
             log.info('extract_sentences_from_paragraphs :  line number processing in file == ' + str(line_in_file)
                      + ' out of '+str(len(paragraphs)))
             sentences = tokenizer.tokenize(text)
@@ -89,10 +100,33 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
     return all_sentences
 
 
-def load_tokenizer(tokens, sentence_end_characters):
+def preprocess_paragraph(text):
+    text = text.replace(' No. ', ' No.')
+    text = text.replace(' no. ', ' no.')
+    text = text.replace(' NO. ', ' NO.')
+    text = text.replace('“', ' ')
+    text = text.replace('”', ' ')
+    return text
+
+
+def load_tokenizer(tokens, config, sentence_end_characters):
+    log.info('load_tokenizer : started ')
     tokenizer = get_tokenizer_english_pickle()
-    tokenizer = update_english_pickle_with_tokens(tokenizer, tokens)
+    exclusive_tokens = load_exclusive_tokens(config)
+    tokenizer = update_english_pickle_with_tokens(tokenizer, tokens, exclusive_tokens)
+    log.info('load_tokenizer : ended ')
     return tokenizer
+
+
+def load_exclusive_tokens(config):
+    exclusive_tokens = config[Constants.EXCLUSIVE_TOKENS]
+    num = 50
+    i = 0
+    while i < num:
+        exclusive_tokens.append(' ' + str(i))
+        i = i + 1
+
+    return exclusive_tokens
 
 
 def load_tokens(config, posTokenFilePath, negTokenFilePath, processId):
@@ -112,7 +146,6 @@ def read_data_from_csv(filePath):
         data = csv.reader(file)
         for row in data:
             text = row[0]
-            log.info('read_data_from_csv : text found ' + text)
             tokens.append(text)
         file.close()
     return tokens

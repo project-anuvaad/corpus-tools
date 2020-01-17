@@ -36,9 +36,26 @@ remove_negative_tokens: True
 # externally exclude some token
 add_negative_tokens:
 
-  - it. # example of a token
-  - him. # example of a token
-  - adv. # example of a token
+  - it # example of a token
+  - him # example of a token
+
+
+# externally add some token, this will be overriding others.
+exclusive_tokens:
+  - ex
+  - rs
+  - nos
+  - no
+  - m/s
+  - m/r
+  - v/s
+  - vs
+  - d/o
+  - s/o
+  - md
+  - ld
+
+min_sentence_length: 8
 
 # Insertion order of token length : asc.(True), desc.(False), random (None)
 token_insertion_order: True
