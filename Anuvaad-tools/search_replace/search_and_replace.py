@@ -92,7 +92,7 @@ def write_to_file(processId):
         for sentence in sentences:
             res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
             data.append(res)
-        sentences = SentencePair.objects(processId=processId)
+        sentences = SentencePair.objects(processId=processId, accepted=True)
         for sentence in sentences:
             res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.UPDATED]}
             data.append(res)
