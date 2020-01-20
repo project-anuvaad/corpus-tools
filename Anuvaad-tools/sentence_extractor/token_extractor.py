@@ -1,4 +1,4 @@
-import sentence_extractor.extractor_config_reader as Config_reader
+import utils.config_reader as Config_reader
 from utils.anuvaad_tools_logger import getLogger
 from utils.timeutils import get_current_time
 from kafka_utils.producer import send_to_kafka

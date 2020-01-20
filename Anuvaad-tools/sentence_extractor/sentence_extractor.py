@@ -1,6 +1,6 @@
 from utils.anuvaad_tools_logger import getLogger
 from utils.timeutils import get_current_time
-from sentence_extractor.extractor_config_reader import read_config_file
+from utils.config_reader import read_config_file
 from sentence_extractor.custom_nltk_tokenizer import get_tokenizer_english_pickle,update_english_pickle_with_tokens
 from sentence_extractor.utils import write_to_csv
 from kafka_utils.producer import send_to_kafka

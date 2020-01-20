@@ -1,5 +1,6 @@
 BASE_PATH_TOOL_1 = "corpusfiles/processing/pipeline_stage_1/"
 BASE_PATH_MT = "corpusfiles/processing/pipeline_stage_2/"
+BASE_PATH_TOOL_3 = "corpusfiles/processing/pipeline_stage_3/"
 
 ERROR_TOPIC = 'toolerror'
 EXTRACTOR_RESPONSE = 'tokenprocessed'
@@ -83,4 +84,13 @@ SELECTED_FILES = 'selected_files'
 
 
 FILE_INDEX = 'file_index'
+
+
+TOPIC_SEARCH_REPLACE = 'searchreplace'
+SEARCH_REPLACE = 'search_replace'
+WRITE_TO_FILE = 'write_to_file'
+TRANSLATED = 'translated'
+REPLACE = 'replace'
+SEARCH_REPLACE_DB = 'preprocessing'
+UPDATED = 'updated'
 

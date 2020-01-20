@@ -1,0 +1,17 @@
+# Sample YAML config file for search and replace from given set of sentences
+# Please note this is a demo file, things can be added or removed as per requirements.
+# Config will be always having this set of properties
+# All the properties mentioned in the config file are mandatory.
+
+config_name: "Default-Config"
+
+#If want to include specific header in the file name(file will contain sentences).
+specific_file_header: "Default_header"
+
+search_replace:
+- english: englist_text
+  translated: tr_text
+  replace: rp_text
+- english: englist_text
+  translated: tr_text
+  replace: rp_text
