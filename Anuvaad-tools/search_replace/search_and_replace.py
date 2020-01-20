@@ -105,6 +105,7 @@ def write_to_file(processId):
                 Constants.DATA: {
                     Constants.STATUS: True,
                     Constants.PROCESS_ID: processId,
+                    Constants.FILES: filepath
 
                 }}
         send_to_kafka(Constants.EXTRACTOR_RESPONSE, data)
