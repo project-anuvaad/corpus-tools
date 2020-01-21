@@ -93,4 +93,5 @@ TRANSLATED = 'translated'
 REPLACE = 'replace'
 SEARCH_REPLACE_DB = 'preprocessing'
 UPDATED = 'updated'
+FINAL_CSV = '_final.csv'
 

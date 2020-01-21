@@ -17,9 +17,24 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
     config = read_config_file(configFilePath)
     search_replaces = config[Constants.SEARCH_REPLACE]
     file_count = 1
-    for file in selected_files:
-        process(search_replaces, processId, workspace, config, file, file_count)
-        file_count = file_count + 1
+    try:
+        for file in selected_files:
+            process(search_replaces, processId, workspace, config, file, file_count)
+            file_count = file_count + 1
+        data = {Constants.PATH: Constants.SEARCH_REPLACE,
+                Constants.DATA: {
+                    Constants.STATUS: Constants.SUCCESS,
+                    Constants.PROCESS_ID: processId,
+                }}
+        send_to_kafka(Constants.EXTRACTOR_RESPONSE, data)
+    except Exception as e:
+        log.error('start_search_replace : Error occurred while processing files, Error is ==  ' + str(e))
+        data = {Constants.PATH: Constants.SEARCH_REPLACE,
+                Constants.DATA: {
+                    Constants.STATUS: Constants.FAILED,
+                    Constants.PROCESS_ID: processId,
+                }}
+        send_to_kafka(Constants.ERROR_TOPIC, data)
     end_time = get_current_time()
     total_time = end_time - start_time
     log.info('start_search_replace : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
@@ -96,16 +111,16 @@ def write_to_file(processId):
         for sentence in sentences:
             res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.UPDATED]}
             data.append(res)
-        filepath = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + '_final.csv'
+        filepath = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.FINAL_CSV
         with open(filepath, Constants.CSV_WRITE) as file:
             writer = csv.writer(file)
             for line in data:
                 writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
-        data = {Constants.PATH: Constants.SEARCH_REPLACE,
+        data = {Constants.PATH: Constants.WRITE_TO_FILE,
                 Constants.DATA: {
-                    Constants.STATUS: True,
+                    Constants.STATUS: Constants.SUCCESS,
                     Constants.PROCESS_ID: processId,
-                    Constants.FILES: processId + '_final.csv'
+                    Constants.FILES: processId + Constants.FINAL_CSV
 
                 }}
         send_to_kafka(Constants.EXTRACTOR_RESPONSE, data)
@@ -120,7 +135,7 @@ def write_to_file(processId):
         total_time = end_time - start_time
         data = {Constants.PATH: Constants.SEARCH_REPLACE,
                 Constants.DATA: {
-                    Constants.STATUS: False,
+                    Constants.STATUS: Constants.FAILED,
                     Constants.PROCESS_ID: processId
                 }}
         send_to_kafka(Constants.ERROR_TOPIC, data)

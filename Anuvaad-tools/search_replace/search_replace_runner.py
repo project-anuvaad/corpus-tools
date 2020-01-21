@@ -30,7 +30,7 @@ def search_replace_thread():
                 log.error('search_replace_thread : ERROR OCCURRED ERROR is == ' + str(e))
                 data = {Constants.PATH: Constants.SEARCH_REPLACE,
                         Constants.DATA: {
-                            Constants.STATUS: False,
+                            Constants.STATUS: Constants.FAILED,
                             Constants.PROCESS_ID: processId
                         }}
                 send_to_kafka(Constants.ERROR_TOPIC, data)
