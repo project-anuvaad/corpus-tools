@@ -1,7 +1,7 @@
 from mongoengine import *
 
 
-class SentencePairUnchecked(Document):
+class SentencePairUnchecked(DynamicDocument):
     processId = StringField(required=True)
     source = StringField()
     target = StringField()

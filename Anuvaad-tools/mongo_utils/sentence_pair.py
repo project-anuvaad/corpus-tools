@@ -1,7 +1,7 @@
 from mongoengine import *
 
 
-class SentencePair(Document):
+class SentencePair(DynamicDocument):
     processId = StringField(required=True)
     source = StringField()
     target = StringField()
