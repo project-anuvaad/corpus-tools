@@ -112,16 +112,32 @@ def write_to_file(processId):
             res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.UPDATED]}
             data.append(res)
         filepath = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.FINAL_CSV
+        sentence_count = 0
         with open(filepath, Constants.CSV_WRITE) as file:
             writer = csv.writer(file)
             for line in data:
+                sentence_count = sentence_count + 1
                 writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
+
+        source_filepath = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.SOURCE_TXT
+        target_filepath = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.TARGET_TXT
+
+        with open(source_filepath, Constants.CSV_WRITE) as source_txt:
+            with open(target_filepath, Constants.CSV_WRITE) as target_txt:
+                for line in data:
+                    source_txt.write(line[Constants.SOURCE] + '\n')
+                    target_txt.write(line[Constants.TARGET] + '\n')
+            target_txt.close()
+            source_txt.close()
+
         data = {Constants.PATH: Constants.WRITE_TO_FILE,
                 Constants.DATA: {
                     Constants.STATUS: Constants.SUCCESS,
                     Constants.PROCESS_ID: processId,
-                    Constants.FILES: processId + Constants.FINAL_CSV
-
+                    Constants.FILES: processId + Constants.FINAL_CSV,
+                    Constants.SOURCE_FILE: processId + Constants.SOURCE_TXT,
+                    Constants.TARGET_FILE: processId + Constants.TARGET_TXT,
+                    Constants.SENTENCE_COUNT: sentence_count
                 }}
         send_to_kafka(Constants.EXTRACTOR_RESPONSE, data)
         end_time = get_current_time()

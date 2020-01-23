@@ -17,9 +17,9 @@ def search_replace_thread():
                 message = msg.value[Constants.DATA]
                 path = message[Constants.PATH]
                 processId = message[Constants.SESSION_ID]
-                workspace = message[Constants.TITLE]
-                configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                 if path == Constants.SEARCH_REPLACE:
+                    workspace = message[Constants.TITLE]
+                    configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                     selected_files = message[Constants.SELECTED_FILES]
                     start_search_replace(processId, workspace, configFilePath, selected_files)
                 elif path == Constants.WRITE_TO_FILE:
