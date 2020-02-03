@@ -99,4 +99,6 @@ TARGET_TXT = '_target.txt'
 SOURCE_FILE = 'source_file'
 TARGET_FILE = 'target_file'
 SENTENCE_COUNT = 'sentence_count'
-
+SENTENCE_COUNT_REJECTED = 'sentence_count_rejected'
+REJECTED = 'rejected'
+REJECTED_FILE = 'rejected_file'
