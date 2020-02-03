@@ -63,13 +63,15 @@ def translation_fetcher_and_writer_thread():
                     all_files = source[Constants.FILES]
                     basepath = source[Constants.PATH]
                     if received + 1 == sent:
-                        merged_file_name = merge_files(all_files, process_id, basepath)
+                        merged_file_name, no_of_sentences = merge_files(all_files, process_id, basepath)
                         message = {
                             Constants.FILE_NAME: merged_file_name,
                             Constants.STATUS: Constants.SUCCESS,
-                            Constants.PROCESS_ID: process_id
+                            Constants.PROCESS_ID: process_id,
+                            Constants.SENTENCE_COUNT: no_of_sentences
                         }
                         data = {Constants.PATH: 'mt', Constants.DATA: message}
+                        log.info('translation_fetcher_and_writer_thread : message sent  == ' + str(data))
                         send_to_kafka(topic=Constants.EXTRACTOR_RESPONSE, value=data)
                     else:
                         body = {Constants.COMPLETE: received + 1}

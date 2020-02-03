@@ -297,7 +297,7 @@ def create_target_sentence(sentence, filename):
 def merge_files(filenames, processId, basepath):
     log.info('merge_files : started')
     merged_file_name = basepath + processId + '_merged.csv'
-
+    no_of_sentences = 0
     try:
         with open(merged_file_name, Constants.CSV_WRITE) as merge:
             writer = csv.writer(merge)
@@ -307,11 +307,12 @@ def merge_files(filenames, processId, basepath):
                 with open(target_filename, Constants.CSV_RT) as source:
                     source_reader = csv.reader(source)
                     for data in source_reader:
+                        no_of_sentences = no_of_sentences + 1
                         writer.writerow(data)
                 source.close()
         merge.close()
         log.info('merge_files : ended')
-        return processId + '_merged.csv'
+        return processId + '_merged.csv', no_of_sentences
 
     except Exception as e:
         log.error('merge_files : Error occurred while merging files for process_id == ' + str(processId))
