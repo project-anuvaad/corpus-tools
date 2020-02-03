@@ -63,7 +63,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                 if not matched:
                     sentence_matched = sentence_matched + 1
                     matched = True
-                new_target = target.replace(translated_text, replace_text)
+                new_target = new_target.replace(translated_text, replace_text)
                 data = {'source_search': eng_text, 'target_search': translated_text, 'replace': replace_text}
                 changes.append(data)
         serial_no = file_count * 1000 + line_count
