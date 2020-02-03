@@ -59,7 +59,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
             eng_text = search_replace[Constants.ENGLISH]
             translated_text = search_replace[Constants.TRANSLATED]
             replace_text = search_replace[Constants.REPLACE]
-            if source.find(eng_text) > -1 and target.find(translated_text) > -1:
+            if source.find(eng_text) > -1 and new_target.find(translated_text) > -1:
                 if not matched:
                     sentence_matched = sentence_matched + 1
                     matched = True
