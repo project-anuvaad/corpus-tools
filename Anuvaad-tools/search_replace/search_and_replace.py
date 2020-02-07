@@ -143,7 +143,8 @@ def write_to_file(processId):
         sentences = SentencePair.objects(processId=processId, accepted=True)
         data = get_all_sentences(sentences)
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
-        filepath = base_path + Constants.FINAL_CSV
+        filepath_1 = base_path + Constants.FINAL_CSV
+        filepath = base_path + '_' + Constants.FINAL_CSV
         write_to_csv(filepath, data)
         source_filepath = base_path + Constants.SOURCE_TXT
         target_filepath = base_path + Constants.TARGET_TXT
@@ -171,7 +172,6 @@ def write_to_file(processId):
             target_txt.close()
             source_txt.close()
         final_unique = set()
-        filepath_1 = base_path + Constants.FINAL_CSV
 
         with open(filepath, Constants.CSV_RT) as final_csv:
             reader = csv.reader(final_csv)
