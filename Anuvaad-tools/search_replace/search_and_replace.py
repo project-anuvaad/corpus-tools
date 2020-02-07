@@ -37,7 +37,7 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
             msg = {
                    Constants.DATA: {
                        Constants.PATH: Constants.WRITE_TO_FILE,
-                       Constants.PROCESS_ID: processId
+                       Constants.SESSION_ID: processId
                    }}
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
 
@@ -158,6 +158,7 @@ def write_to_file(processId):
                    Constants.PATH: Constants.WRITE_TO_FILE,
                    Constants.STATUS: Constants.SUCCESS,
                    Constants.PROCESS_ID: processId,
+                   Constants.SESSION_ID: processId,
                    Constants.FILES: processId + Constants.FINAL_CSV,
                    Constants.SOURCE_FILE: processId + Constants.SOURCE_TXT,
                    Constants.TARGET_FILE: processId + Constants.TARGET_TXT,
