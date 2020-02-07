@@ -21,8 +21,10 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
     sentences_matched_count = 0
     try:
         for file in selected_files:
-            sentences_matched_count = sentences_matched_count + \
-                                      process(search_replaces, processId, workspace, config, file, file_count)
+            all_not_selected = list()
+            count, not_selected = process(search_replaces, processId, workspace, config, file, file_count)
+            sentences_matched_count = sentences_matched_count + count
+            all_not_selected = all_not_selected.__add__(not_selected)
             file_count = file_count + 1
         msg_ = {Constants.PATH: Constants.SEARCH_REPLACE,
                 Constants.DATA: {
@@ -31,6 +33,7 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
                     Constants.SENTENCE_COUNT: sentences_matched_count
                 }}
         log.info('start_search_replace : sentence matched count == ' + str(sentences_matched_count))
+
         if sentences_matched_count == 0:
             msg = {Constants.PATH: Constants.WRITE_TO_FILE,
                    Constants.DATA: {
@@ -39,6 +42,8 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
         else:
             send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg_)
+        file_path_not_selected = Constants.BASE_PATH_TOOL_3 + processId/processId + Constants.NOT_SELECTED_CSV
+        write_to_csv(file_path_not_selected, all_not_selected)
 
     except Exception as e:
         log.error('start_search_replace : Error occurred while processing files, Error is ==  ' + str(e))
@@ -60,6 +65,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
     lines = readfile(processId, file)
     line_count = 1
     sentence_matched = 0
+    not_matched = list()
     for line in lines:
         source = line['source']
         target = line['target']
@@ -94,17 +100,19 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                             create_entry(processId, changes, new_target, source, target, length + 1, False, hash_)
                         break
                 if len(changes) == 0:
-                    sen = SentencePairUnchecked(processId=processId, source=source, target=target, serial_no=0)
-                    sen.save()
+                    data = {Constants.SOURCE: source, Constants.TARGET: target}
+                    not_matched.append(data)
+
             else:
-                sen = SentencePairUnchecked(processId=processId, source=source, target=target, serial_no=0)
-                sen.save()
+                data = {Constants.SOURCE: source, Constants.TARGET: target}
+                not_matched.append(data)
+
         line_count = line_count + 1
 
     end_time = get_current_time()
     total_time = end_time - start_time
     log.info('process : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
-    return sentence_matched
+    return sentence_matched, not_matched
 
 
 def create_entry(processId, changes, target_update, source, target, serial_no, is_alone, hash_):
@@ -132,10 +140,8 @@ def write_to_file(processId):
     start_time = get_current_time()
     log.info('write_to_file : started at ' + str(start_time))
     try:
-        sentences = SentencePairUnchecked.objects(processId=processId)
-        data = get_all_sentences(sentences)
         sentences = SentencePair.objects(processId=processId, accepted=True)
-        data = data.__add__(get_all_sentences(sentences))
+        data = get_all_sentences(sentences)
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath = base_path + Constants.FINAL_CSV
         sentence_count = write_to_csv(filepath, data)
@@ -147,6 +153,12 @@ def write_to_file(processId):
                 for line in data:
                     source_txt.write(line[Constants.SOURCE] + '\n')
                     target_txt.write(line[Constants.TARGET] + '\n')
+            not_match_file = Constants.BASE_PATH_TOOL_3 + processId + processId + Constants.NOT_SELECTED_CSV
+            with open(not_match_file, Constants.CSV_RT) as not_matched:
+                reader = csv.reader(not_matched)
+                for line in reader:
+                    source_txt.write(line[0] + '\n')
+                    target_txt.write(line[1] + '\n')
             target_txt.close()
             source_txt.close()
 
@@ -190,7 +202,7 @@ def write_to_file(processId):
 
 def write_to_csv(filepath, data):
     sentence_count = 0
-    with open(filepath, Constants.CSV_WRITE) as file:
+    with open(filepath, Constants.CSV_APPEND) as file:
         writer = csv.writer(file)
         for line in data:
             sentence_count = sentence_count + 1
@@ -200,9 +212,13 @@ def write_to_csv(filepath, data):
 
 def get_all_sentences(sentences):
     data = list()
+    unique = set()
     for sentence in sentences:
-        res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
-        data.append(res)
+        hash_ = sentence[Constants._HASH]
+        if not unique.__contains__(hash_):
+            res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
+            data.append(res)
+            unique.add(hash_)
     return data
 
 
