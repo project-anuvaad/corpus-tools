@@ -156,9 +156,13 @@ def write_to_file(processId):
             not_match_file = Constants.BASE_PATH_TOOL_3 + processId + processId + Constants.NOT_SELECTED_CSV
             with open(not_match_file, Constants.CSV_RT) as not_matched:
                 reader = csv.reader(not_matched)
+                unique = set()
                 for line in reader:
-                    source_txt.write(line[0] + '\n')
-                    target_txt.write(line[1] + '\n')
+                    if not unique.__contains__(line[0]):
+                        source_txt.write(line[0] + '\n')
+                        target_txt.write(line[1] + '\n')
+                        unique.add(line[0])
+                unique.clear()
             target_txt.close()
             source_txt.close()
 
