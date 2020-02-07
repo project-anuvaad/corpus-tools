@@ -28,8 +28,9 @@ def search_replace_thread():
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
             except Exception as e:
                 log.error('search_replace_thread : ERROR OCCURRED ERROR is == ' + str(e))
-                data = {Constants.PATH: Constants.SEARCH_REPLACE,
+                data = {
                         Constants.DATA: {
+                            Constants.PATH: Constants.SEARCH_REPLACE,
                             Constants.STATUS: Constants.FAILED,
                             Constants.PROCESS_ID: processId
                         }}
