@@ -73,9 +73,9 @@ def process(search_replaces, processId, workspace, config, file, file_count):
             replace_text = search_replace[Constants.REPLACE]
             if source.find(eng_text) > -1:
 
+                changes = list()
                 for translated_text in translated_texts:
                     if new_target.find(translated_text) > -1:
-                        changes = list()
                         if not matched:
                             sentence_matched = sentence_matched + 1
                             matched = True
@@ -93,7 +93,12 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                             SentencePair.objects(processId=processId, hash_=hash_).update(is_alone=False)
                             create_entry(processId, changes, new_target, source, target, length + 1, False, hash_)
                         break
-
+                if len(changes) == 0:
+                    sen = SentencePairUnchecked(processId=processId, source=source, target=target, serial_no=0)
+                    sen.save()
+            else:
+                sen = SentencePairUnchecked(processId=processId, source=source, target=target, serial_no=0)
+                sen.save()
         line_count = line_count + 1
 
     end_time = get_current_time()
