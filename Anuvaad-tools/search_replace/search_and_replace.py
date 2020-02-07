@@ -170,6 +170,18 @@ def write_to_file(processId):
                     unique.clear()
             target_txt.close()
             source_txt.close()
+        final_unique = set()
+        filepath_1 = base_path + Constants.FINAL_CSV
+
+        with open(filepath, Constants.CSV_RT) as final_csv:
+            reader = csv.reader(final_csv)
+            with open(filepath_1, Constants.CSV_WRITE) as final_csv_:
+                writer = csv.writer(final_csv_)
+
+                for line in reader:
+                    if not final_unique.__contains__(line[0]):
+                        final_unique.add(line[0])
+                        writer.writerow([line[0], line[1]])
 
         sentences = SentencePair.objects(processId=processId, accepted=False)
         data.clear()
