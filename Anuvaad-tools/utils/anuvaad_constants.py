@@ -11,6 +11,7 @@ TITLE = 'title'
 
 CSV_RT = 'rt'
 CSV_WRITE = 'w'
+CSV_APPEND = 'a'
 
 CONFIG_NAME = 'config_name'
 SFILE_HEADER = 'specific_file_header'
@@ -81,7 +82,7 @@ PATH = 'path'
 FAILED = 'FAILED'
 SUCCESS = 'success'
 SELECTED_FILES = 'selected_files'
-
+_HASH = '_hash'
 
 FILE_INDEX = 'file_index'
 
@@ -102,3 +103,9 @@ SENTENCE_COUNT = 'sentence_count'
 SENTENCE_COUNT_REJECTED = 'sentence_count_rejected'
 REJECTED = 'rejected'
 REJECTED_FILE = 'rejected_file'
+MT_STATS = 'mt_stats'
+ALREADY_PRESENT = 'already_present'
+TOTAL = 'total'
+TO_FETCH = 'to_fetch'
+NOT_SELECTED_CSV = '_not_selected.csv'
+
