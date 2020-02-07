@@ -24,29 +24,27 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
             sentences_matched_count = sentences_matched_count + \
                                       process(search_replaces, processId, workspace, config, file, file_count)
             file_count = file_count + 1
-        msg_ = {
+        msg_ = {Constants.PATH: Constants.SEARCH_REPLACE,
                 Constants.DATA: {
-                    Constants.PATH: Constants.SEARCH_REPLACE,
                     Constants.STATUS: Constants.SUCCESS,
                     Constants.PROCESS_ID: processId,
                     Constants.SENTENCE_COUNT: sentences_matched_count
                 }}
         log.info('start_search_replace : sentence matched count == ' + str(sentences_matched_count))
-        send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg_)
         if sentences_matched_count == 0:
-            msg = {
+            msg = {Constants.PATH: Constants.WRITE_TO_FILE,
                    Constants.DATA: {
-                       Constants.PATH: Constants.WRITE_TO_FILE,
                        Constants.SESSION_ID: processId
                    }}
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
-
+        else:
+            send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg_)
 
     except Exception as e:
         log.error('start_search_replace : Error occurred while processing files, Error is ==  ' + str(e))
         msg = {Constants.PATH: Constants.SEARCH_REPLACE,
                Constants.DATA: {
-                   Constants.PATH: Constants.SEARCH_REPLACE,
+
                    Constants.STATUS: Constants.FAILED,
                    Constants.PROCESS_ID: processId,
                }}
@@ -155,7 +153,6 @@ def write_to_file(processId):
 
         msg = {Constants.PATH: Constants.WRITE_TO_FILE,
                Constants.DATA: {
-                   Constants.PATH: Constants.WRITE_TO_FILE,
                    Constants.STATUS: Constants.SUCCESS,
                    Constants.PROCESS_ID: processId,
                    Constants.SESSION_ID: processId,

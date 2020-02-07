@@ -15,7 +15,7 @@ def search_replace_thread():
             try:
                 log.info('search_replace_thread : message for queue == ' + str(msg))
                 message = msg.value[Constants.DATA]
-                path = message[Constants.PATH]
+                path = msg.value[Constants.PATH]
                 processId = message[Constants.SESSION_ID]
                 if path == Constants.SEARCH_REPLACE:
                     workspace = message[Constants.TITLE]
@@ -28,9 +28,8 @@ def search_replace_thread():
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
             except Exception as e:
                 log.error('search_replace_thread : ERROR OCCURRED ERROR is == ' + str(e))
-                data = {
+                data = {Constants.PATH: Constants.SEARCH_REPLACE,
                         Constants.DATA: {
-                            Constants.PATH: Constants.SEARCH_REPLACE,
                             Constants.STATUS: Constants.FAILED,
                             Constants.PROCESS_ID: processId
                         }}
