@@ -14,9 +14,6 @@ def get_consumer(topic):
     try:
         consumer = KafkaConsumer(
             topic,
-            auto_offset_reset='latest',
-            enable_auto_commit=True,
-            group_id='anuvaad',
             bootstrap_servers=[bootstrap_server],
             value_deserializer=lambda x: handle_json(x))
 
