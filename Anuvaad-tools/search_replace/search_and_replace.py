@@ -42,7 +42,7 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
         else:
             send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg_)
-        file_path_not_selected = Constants.BASE_PATH_TOOL_3 + processId/processId + Constants.NOT_SELECTED_CSV
+        file_path_not_selected = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
         write_to_csv(file_path_not_selected, all_not_selected)
 
     except Exception as e:
@@ -144,25 +144,30 @@ def write_to_file(processId):
         data = get_all_sentences(sentences)
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath = base_path + Constants.FINAL_CSV
-        sentence_count = write_to_csv(filepath, data)
+        write_to_csv(filepath, data)
         source_filepath = base_path + Constants.SOURCE_TXT
         target_filepath = base_path + Constants.TARGET_TXT
-
+        sentence_count = 0
         with open(source_filepath, Constants.CSV_WRITE) as source_txt:
             with open(target_filepath, Constants.CSV_WRITE) as target_txt:
                 for line in data:
+                    sentence_count = sentence_count + 1
                     source_txt.write(line[Constants.SOURCE] + '\n')
                     target_txt.write(line[Constants.TARGET] + '\n')
-            not_match_file = Constants.BASE_PATH_TOOL_3 + processId + processId + Constants.NOT_SELECTED_CSV
-            with open(not_match_file, Constants.CSV_RT) as not_matched:
-                reader = csv.reader(not_matched)
-                unique = set()
-                for line in reader:
-                    if not unique.__contains__(line[0]):
-                        source_txt.write(line[0] + '\n')
-                        target_txt.write(line[1] + '\n')
-                        unique.add(line[0])
-                unique.clear()
+                not_match_file = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
+                with open(not_match_file, Constants.CSV_RT) as not_matched:
+                    reader = csv.reader(not_matched)
+                    unique = set()
+                    with open(filepath, Constants.CSV_APPEND) as final_csv:
+                        final_csv_writer = csv.writer(final_csv)
+                        for line in reader:
+                            if not unique.__contains__(line[0]):
+                                sentence_count = sentence_count + 1
+                                source_txt.write(line[0] + '\n')
+                                target_txt.write(line[1] + '\n')
+                                final_csv_writer.writerow([line[0], line[1]])
+                                unique.add(line[0])
+                    unique.clear()
             target_txt.close()
             source_txt.close()
 
@@ -206,23 +211,28 @@ def write_to_file(processId):
 
 def write_to_csv(filepath, data):
     sentence_count = 0
+    unique = set()
     with open(filepath, Constants.CSV_APPEND) as file:
         writer = csv.writer(file)
         for line in data:
-            sentence_count = sentence_count + 1
-            writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
+            if not unique.__contains__(line[Constants.SOURCE]):
+                unique.add(line[Constants.SOURCE])
+                sentence_count = sentence_count + 1
+                writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
     return sentence_count
 
 
 def get_all_sentences(sentences):
+    log.info('get_all_sentences : started')
     data = list()
     unique = set()
     for sentence in sentences:
-        hash_ = sentence[Constants._HASH]
-        if not unique.__contains__(hash_):
-            res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
+        source = sentence[Constants.SOURCE]
+        if not unique.__contains__(source):
+            res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET]}
             data.append(res)
-            unique.add(hash_)
+            unique.add(source)
+    log.info('get_all_sentences : ended')
     return data
 
 
