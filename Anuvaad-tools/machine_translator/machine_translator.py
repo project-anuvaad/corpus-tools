@@ -298,6 +298,7 @@ def merge_files(filenames, processId, basepath):
     log.info('merge_files : started')
     merged_file_name = basepath + processId + '_merged.csv'
     no_of_sentences = 0
+    unique = set()
     try:
         with open(merged_file_name, Constants.CSV_WRITE) as merge:
             writer = csv.writer(merge)
@@ -307,8 +308,10 @@ def merge_files(filenames, processId, basepath):
                 with open(target_filename, Constants.CSV_RT) as source:
                     source_reader = csv.reader(source)
                     for data in source_reader:
-                        no_of_sentences = no_of_sentences + 1
-                        writer.writerow(data)
+                        if not unique.__contains__(data[0]):
+                            no_of_sentences = no_of_sentences + 1
+                            unique.add(data[0])
+                            writer.writerow(data)
                 source.close()
         merge.close()
         log.info('merge_files : ended')

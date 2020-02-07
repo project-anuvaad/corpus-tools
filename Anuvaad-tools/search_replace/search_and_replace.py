@@ -4,6 +4,7 @@ from utils.config_reader import read_config_file
 import utils.anuvaad_constants as Constants
 from kafka_utils.producer import send_to_kafka
 import csv
+import hashlib
 from mongo_utils.sentence_pair import SentencePair
 from mongo_utils.sentence_pair_unchecked import SentencePairUnchecked
 
@@ -29,7 +30,15 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
                    Constants.PROCESS_ID: processId,
                    Constants.SENTENCE_COUNT: sentences_matched_count
                }}
-        send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg)
+        log.info('start_search_replace : sentence matched count == ' + str(sentences_matched_count))
+        if sentences_matched_count == 0:
+            msg = {Constants.PATH: Constants.WRITE_TO_FILE,
+                   Constants.DATA: {
+                       Constants.PROCESS_ID: processId
+                   }}
+            send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
+
+            send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg)
     except Exception as e:
         log.error('start_search_replace : Error occurred while processing files, Error is ==  ' + str(e))
         msg = {Constants.PATH: Constants.SEARCH_REPLACE,
@@ -52,26 +61,37 @@ def process(search_replaces, processId, workspace, config, file, file_count):
     for line in lines:
         source = line['source']
         target = line['target']
-        changes = list()
+
         new_target = target
         matched = False
+
         for search_replace in search_replaces:
             eng_text = search_replace[Constants.ENGLISH]
-            translated_text = search_replace[Constants.TRANSLATED]
+            translated_texts = search_replace[Constants.TRANSLATED]
             replace_text = search_replace[Constants.REPLACE]
-            if source.find(eng_text) > -1 and new_target.find(translated_text) > -1:
-                if not matched:
-                    sentence_matched = sentence_matched + 1
-                    matched = True
-                new_target = new_target.replace(translated_text, replace_text)
-                data = {'source_search': eng_text, 'target_search': translated_text, 'replace': replace_text}
-                changes.append(data)
-        serial_no = file_count * 1000 + line_count
-        if len(changes) > 0:
-            create_entry(processId, changes, new_target, source, target, serial_no)
-        else:
-            sen = SentencePairUnchecked(processId=processId, source=source, target=target, serial_no=serial_no)
-            sen.save()
+            if source.find(eng_text) > -1:
+
+                for translated_text in translated_texts:
+                    if new_target.find(translated_text) > -1:
+                        changes = list()
+                        if not matched:
+                            sentence_matched = sentence_matched + 1
+                            matched = True
+                        new_target = new_target.replace(translated_text, replace_text)
+
+                        data = {'source_search': eng_text, 'target_search': translated_text, 'replace': replace_text}
+                        changes.append(data)
+                        hash_ = get_hash(source)
+                        sentences = SentencePair.objects(processId=processId, hash_=hash_)
+                        length = len(sentences)
+
+                        if length == 0:
+                            create_entry(processId, changes, new_target, source, target, 1, True, hash_)
+                        else:
+                            SentencePair.objects(processId=processId, hash_=hash_).update(is_alone=False)
+                            create_entry(processId, changes, new_target, source, target, length + 1, False, hash_)
+                        break
+
         line_count = line_count + 1
 
     end_time = get_current_time()
@@ -80,9 +100,10 @@ def process(search_replaces, processId, workspace, config, file, file_count):
     return sentence_matched
 
 
-def create_entry(processId, changes, target_update, source, target, serial_no):
+def create_entry(processId, changes, target_update, source, target, serial_no, is_alone, hash_):
     sen = SentencePair(processId=processId, changes=changes, updated=target_update, accepted=False,
-                       source=source, target=target, serial_no=serial_no, in_review=False, review_completed=False)
+                       source=source, target=target, serial_no=serial_no, in_review=False,
+                       review_completed=False, is_alone=is_alone, hash_=hash_)
     sen.save()
 
 
@@ -175,3 +196,9 @@ def get_all_sentences(sentences):
         res = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
         data.append(res)
     return data
+
+
+def get_hash(text):
+    encoded_str = hashlib.sha256(text.encode())
+    hash_hex = encoded_str.hexdigest()
+    return hash_hex

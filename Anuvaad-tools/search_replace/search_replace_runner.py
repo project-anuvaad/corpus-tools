@@ -37,4 +37,4 @@ def search_replace_thread():
 
     except Exception as e:
         log.error('search_replace_thread : Error occurred while getting consumer for topic == ' +
-                  str(TOPIC_TOKEN_EXTRACTOR) + ' ERROR is == ' + str(e))
+                  str(Constants.ERROR_TOPIC) + ' ERROR is == ' + str(e))
