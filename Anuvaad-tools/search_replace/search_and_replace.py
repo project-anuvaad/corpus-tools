@@ -149,17 +149,17 @@ def write_to_file(processId):
         source_filepath = base_path + Constants.SOURCE_TXT
         target_filepath = base_path + Constants.TARGET_TXT
         sentence_count = 0
-        with open(source_filepath, Constants.CSV_WRITE, encoding='utf-8') as source_txt:
-            with open(target_filepath, Constants.CSV_WRITE, encoding='utf-8') as target_txt:
+        with open(source_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as source_txt:
+            with open(target_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as target_txt:
                 for line in data:
                     sentence_count = sentence_count + 1
                     source_txt.write(line[Constants.SOURCE] + '\n')
                     target_txt.write(line[Constants.TARGET] + '\n')
                 not_match_file = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
-                with open(not_match_file, Constants.CSV_RT, encoding='utf-8') as not_matched:
+                with open(not_match_file, Constants.CSV_RT, encoding='utf-8', errors="ignore") as not_matched:
                     reader = csv.reader(not_matched)
                     unique = set()
-                    with open(filepath, Constants.CSV_APPEND, encoding='utf-8') as final_csv:
+                    with open(filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as final_csv:
                         final_csv_writer = csv.writer(final_csv)
                         for line in reader:
                             if not unique.__contains__(line[0]):
@@ -173,9 +173,9 @@ def write_to_file(processId):
             source_txt.close()
         final_unique = set()
 
-        with open(filepath, Constants.CSV_RT, encoding='utf-8') as final_csv:
+        with open(filepath, Constants.CSV_RT, encoding='utf-8', errors="ignore") as final_csv:
             reader = csv.reader(final_csv)
-            with open(filepath_1, Constants.CSV_WRITE, encoding='utf-8') as final_csv_:
+            with open(filepath_1, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as final_csv_:
                 writer = csv.writer(final_csv_)
 
                 for line in reader:
@@ -224,7 +224,7 @@ def write_to_file(processId):
 def write_to_csv(filepath, data):
     sentence_count = 0
     unique = set()
-    with open(filepath, Constants.CSV_APPEND, encoding='utf-8') as file:
+    with open(filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as file:
         writer = csv.writer(file)
         for line in data:
             if not unique.__contains__(line[Constants.SOURCE]):
