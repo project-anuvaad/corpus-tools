@@ -108,4 +108,8 @@ ALREADY_PRESENT = 'already_present'
 TOTAL = 'total'
 TO_FETCH = 'to_fetch'
 NOT_SELECTED_CSV = '_not_selected.csv'
+USERNAME = 'username'
+PROCESSING = 'PROCESSING'
+DOMAIN_LC = 'lc'
+TOOL_CHAIN = 'TOOL_CHAIN'
 

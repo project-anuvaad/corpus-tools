@@ -6,17 +6,24 @@ from kafka_utils.producer import send_to_kafka
 import csv
 import hashlib
 from mongo_utils.sentence_pair import SentencePair
-from mongo_utils.sentence_pair_unchecked import SentencePairUnchecked
+from mongo_utils.sentence import Sentence
+from mongo_utils.corpus import Corpus
+import datetime
 
 log = getLogger()
 
 
-def start_search_replace(processId, workspace, configFilePath, selected_files):
+def start_search_replace(processId, workspace, configFilePath, selected_files, username):
     start_time = get_current_time()
     log.info('start_search_replace : started at ' + str(start_time))
     configFilePath = Constants.BASE_PATH_TOOL_3 + processId + '/' + configFilePath
     config = read_config_file(configFilePath)
     search_replaces = config[Constants.SEARCH_REPLACE]
+    target_language = ''
+    try:
+        target_language = config[Constants.TARGET_LANGUAGE]
+    except Exception as e:
+        log.info('start_search_replace : no target language present')
     file_count = 1
     sentences_matched_count = 0
     try:
@@ -37,7 +44,10 @@ def start_search_replace(processId, workspace, configFilePath, selected_files):
         if sentences_matched_count == 0:
             msg = {Constants.PATH: Constants.WRITE_TO_FILE,
                    Constants.DATA: {
-                       Constants.SESSION_ID: processId
+                       Constants.SESSION_ID: processId,
+                       Constants.USERNAME: username,
+                       Constants.TITLE: workspace,
+                       Constants.TARGET_LANGUAGE: target_language
                    }}
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
         else:
@@ -136,7 +146,7 @@ def readfile(processId, file):
         log.info('readfile : error occurred while reading file, Error is == ' + str(e))
 
 
-def write_to_file(processId):
+def write_to_file(processId, username, workspace, target_language):
     start_time = get_current_time()
     log.info('write_to_file : started at ' + str(start_time))
     try:
@@ -146,8 +156,8 @@ def write_to_file(processId):
         filepath_1 = base_path + Constants.FINAL_CSV
         filepath = base_path + '_' + Constants.FINAL_CSV
         write_to_csv(filepath, data)
-        source_filepath = base_path + Constants.SOURCE_TXT
-        target_filepath = base_path + Constants.TARGET_TXT
+        source_filepath = base_path + '_english' + Constants.SOURCE_TXT
+        target_filepath = base_path + '_' + target_language + Constants.TARGET_TXT
         sentence_count = 0
         with open(source_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as source_txt:
             with open(target_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as target_txt:
@@ -186,6 +196,14 @@ def write_to_file(processId):
         sentences = SentencePair.objects(processId=processId, accepted=False)
         data.clear()
         data = get_all_sentences(sentences)
+        x = datetime.datetime.now()
+        created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
+
+        corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on, last_modified=created_on,
+                      author=username, status=Constants.PROCESSING, domain=Constants.DOMAIN_LC, name=workspace,
+                      type=Constants.TOOL_CHAIN)
+        corp.save()
+        create_sentence_entry_for_translator(processId, data)
         filepath = base_path + '_' + Constants.REJECTED + Constants.FINAL_CSV
         sentence_count_rejected = write_to_csv(filepath, data)
 
@@ -220,6 +238,17 @@ def write_to_file(processId):
         send_to_kafka(Constants.ERROR_TOPIC, msg)
         log.info('write_to_file : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
 
+
+def create_sentence_entry_for_translator(processid, sentences):
+    log.info('create_sentence_entry_for_translator : started for processid == ' + str(processid))
+    status = Constants.PROCESSING
+    for sen in sentences:
+        source = sen[Constants.SOURCE]
+        target = sen[Constants.TARGET]
+        hash = get_hash(source)
+        data = Sentence(source=source, target=target, basename=processid, corpusid=processid, status=status, hash=hash)
+        data.save()
+    log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
 
 def write_to_csv(filepath, data):
     sentence_count = 0

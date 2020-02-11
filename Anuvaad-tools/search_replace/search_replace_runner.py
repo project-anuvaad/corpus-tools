@@ -18,12 +18,16 @@ def search_replace_thread():
                 path = msg.value[Constants.PATH]
                 processId = message[Constants.SESSION_ID]
                 if path == Constants.SEARCH_REPLACE:
+                    username = message[Constants.USERNAME]
                     workspace = message[Constants.TITLE]
                     configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                     selected_files = message[Constants.SELECTED_FILES]
-                    start_search_replace(processId, workspace, configFilePath, selected_files)
+                    start_search_replace(processId, workspace, configFilePath, selected_files, username)
                 elif path == Constants.WRITE_TO_FILE:
-                    write_to_file(processId)
+                    username = message[Constants.USERNAME]
+                    workspace = message[Constants.TITLE]
+                    target_language = message[Constants.TARGET_LANGUAGE]
+                    write_to_file(processId, username, workspace, target_language)
 
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
             except Exception as e:
