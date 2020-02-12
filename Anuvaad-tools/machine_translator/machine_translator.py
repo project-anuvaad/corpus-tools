@@ -208,8 +208,7 @@ def translate_and_create_es(sentences, targetLanguage, filename, index):
         translated_sentences = translate_from_google(sen_text, targetLanguage)
         for translated_sentence in translated_sentences:
             text = translated_sentence[Constants.SOURCE]
-            encoded_str = hashlib.sha256(text.encode())
-            hash_hex = encoded_str.hexdigest()
+            hash_hex = get_hash(text)
             sentence = sentences[hash_hex]
             sentence[Constants.TARGET_SENTENCE] = translated_sentence[Constants.TARGET]
             log.info('Before create target_sentence')
@@ -327,3 +326,41 @@ def change_csv_filename(filename, added_name):
     name = filename.split('.csv')
     target_name = name[0] + added_name + '.csv'
     return target_name
+
+
+def check_elastic_for_new_sentences(hashs, index):
+    count = 0
+    already_present = 0
+    hash_list = list()
+    for hash_ in hashs:
+        hash_list.append(hash_)
+        count = count + 1
+        if count == 100:
+            data = get_all_by_ids(hash_list,index)
+            already_present = already_present + len(data.keys())
+            count = 0
+            hash_list.clear()
+    if len(hash_list) > 0:
+        data = get_all_by_ids(hash_list, index)
+        already_present = already_present + len(data.keys())
+        hash_list.clear()
+    return already_present
+
+
+
+
+def get_hash(text):
+    encoded_str = hashlib.sha256(text.encode())
+    hash_hex = encoded_str.hexdigest()
+    return hash_hex
+
+
+def read_csv(file, processId):
+    unique = list()
+    base_path = Constants.BASE_PATH_MT + processId
+    filepath = base_path + '/' + file
+    with open(filepath, Constants.CSV_RT) as source:
+        reader = csv.reader(source)
+        for line in reader:
+            unique.append(line[0])
+    return unique

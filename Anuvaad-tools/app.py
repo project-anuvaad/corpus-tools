@@ -7,11 +7,13 @@ from machine_translator.machine_translator_runner import machine_translation_thr
 from search_replace.search_replace_runner import search_replace_thread
 from utils.anuvaad_tools_logger import getLogger
 from api.tool_server_check_api import health_check_api
+from api.machine_translation_api import mt_api
 from mongo_utils.mongo_connect import connect_mongo
 import threading
 
 app = Flask(__name__)
 app.register_blueprint(health_check_api)
+app.register_blueprint(mt_api)
 
 log = getLogger()
 connect_mongo()

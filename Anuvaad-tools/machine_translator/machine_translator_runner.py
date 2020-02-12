@@ -16,6 +16,7 @@ def machine_translation_thread():
         for msg in consumer:
             try:
                 log.info('machine_translation_thread : message for queue == ' + str(msg))
+
                 message = msg.value[Constants.DATA]
                 sourceFiles = message[Constants.SELECTED_FILES]
                 targetLanguage = message[Constants.TARGET_LANGUAGE]
@@ -24,17 +25,18 @@ def machine_translation_thread():
                 created_by = message[Constants.CREATED_BY]
                 domain = None
                 use_latest = message[Constants.USE_LATEST]
-                start_machine_translation(processId, workspace, sourceFiles, targetLanguage, created_by,
-                                          None, domain, use_latest)
+
+                start_machine_translation(processId, workspace, sourceFiles, targetLanguage,
+                                          created_by, None, domain, use_latest)
                 log.info('machine_translation_thread : Ended for processId == ' + str(processId))
             except Exception as e:
 
                 log.error('machine_translation_thread : ERROR OCCURRED ERROR is == ' + str(e))
                 data = {'path': 'mt',
-                 'data': {
-                     'status': False,
-                     'processId': processId
-                 }}
+                        'data': {
+                            'status': False,
+                            'processId': processId
+                        }}
                 send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)
     except Exception as e:
         log.error('machine_translation_thread : Error occurred while getting consumer for topic == ' +
@@ -93,5 +95,3 @@ def translation_fetcher_and_writer_thread():
     except Exception as e:
         log.error('translation_fetcher_and_writer_thread : Error occurred while getting consumer for topic == ' +
                   str(Constants.TOPIC_FETCHER) + ' ERROR is == ' + str(e))
-
-
