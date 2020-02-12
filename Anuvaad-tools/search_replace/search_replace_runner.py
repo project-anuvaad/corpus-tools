@@ -26,7 +26,11 @@ def search_replace_thread():
                 elif path == Constants.WRITE_TO_FILE:
                     username = message[Constants.USERNAME]
                     workspace = message[Constants.TITLE]
-                    target_language = message[Constants.TARGET_LANGUAGE]
+                    target_language = ''
+                    try:
+                        target_language = message[Constants.TARGET_LANGUAGE]
+                    except Exception as e:
+                        log.info('search_replace_thread : no target language found ')
                     write_to_file(processId, username, workspace, target_language)
 
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
