@@ -22,16 +22,17 @@ def search_replace_thread():
                     workspace = message[Constants.TITLE]
                     configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                     selected_files = message[Constants.SELECTED_FILES]
-                    start_search_replace(processId, workspace, configFilePath, selected_files, username)
+                    target_language = message[Constants.TARGET_LANGUAGE]
+                    source_language = message[Constants.SOURCE_LANGUAGE]
+                    start_search_replace(processId, workspace, configFilePath, selected_files, username,
+                                         source_language, target_language)
                 elif path == Constants.WRITE_TO_FILE:
                     username = message[Constants.USERNAME]
                     workspace = message[Constants.TITLE]
-                    target_language = ''
-                    try:
-                        target_language = message[Constants.TARGET_LANGUAGE]
-                    except Exception as e:
-                        log.info('search_replace_thread : no target language found ')
-                    write_to_file(processId, username, workspace, target_language)
+                    target_language = message[Constants.TARGET_LANGUAGE]
+                    source_language = message[Constants.SOURCE_LANGUAGE]
+
+                    write_to_file(processId, username, workspace, target_language, source_language)
 
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
             except Exception as e:

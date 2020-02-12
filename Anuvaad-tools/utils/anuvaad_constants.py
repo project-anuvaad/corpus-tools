@@ -34,6 +34,7 @@ MIN_SEN_LENGTH = 'min_sentence_length'
 
 SOURCE_FILES = 'source_files'
 TARGET_LANGUAGE = 'target_language'
+SOURCE_LANGUAGE = 'source_language'
 TARGET_LANGUAGES = 'target_languages'
 STATUS = 'status'
 FILES = 'files'

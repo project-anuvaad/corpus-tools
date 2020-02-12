@@ -13,17 +13,14 @@ import datetime
 log = getLogger()
 
 
-def start_search_replace(processId, workspace, configFilePath, selected_files, username):
+def start_search_replace(processId, workspace, configFilePath, selected_files, username,
+                         source_language, target_language):
     start_time = get_current_time()
     log.info('start_search_replace : started at ' + str(start_time))
     configFilePath = Constants.BASE_PATH_TOOL_3 + processId + '/' + configFilePath
     config = read_config_file(configFilePath)
     search_replaces = config[Constants.SEARCH_REPLACE]
-    target_language = ''
-    try:
-        target_language = config[Constants.TARGET_LANGUAGE]
-    except Exception as e:
-        log.info('start_search_replace : no target language present')
+
     file_count = 1
     sentences_matched_count = 0
     try:
@@ -47,7 +44,8 @@ def start_search_replace(processId, workspace, configFilePath, selected_files, u
                        Constants.SESSION_ID: processId,
                        Constants.USERNAME: username,
                        Constants.TITLE: workspace,
-                       Constants.TARGET_LANGUAGE: target_language
+                       Constants.TARGET_LANGUAGE: target_language,
+                       Constants.SOURCE_LANGUAGE: source_language
                    }}
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
         else:
@@ -146,10 +144,12 @@ def readfile(processId, file):
         log.info('readfile : error occurred while reading file, Error is == ' + str(e))
 
 
-def write_to_file(processId, username, workspace, target_language):
+def write_to_file(processId, username, workspace, target_language, source_Language):
     start_time = get_current_time()
     log.info('write_to_file : started at ' + str(start_time))
     try:
+        target_language = get_lang(target_language)
+        source_Language = get_lang(source_Language)
         sentences = SentencePair.objects(processId=processId, accepted=True)
         data = get_all_sentences(sentences)
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
@@ -201,7 +201,7 @@ def write_to_file(processId, username, workspace, target_language):
 
         corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on, last_modified=created_on,
                       author=username, status=Constants.PROCESSING, domain=Constants.DOMAIN_LC, name=workspace,
-                      type=Constants.TOOL_CHAIN)
+                      type=Constants.TOOL_CHAIN, source_lang=source_Language, target_lang=target_language)
         corp.save()
         create_sentence_entry_for_translator(processId, data)
         filepath = base_path + '_' + Constants.REJECTED + Constants.FINAL_CSV
@@ -250,6 +250,7 @@ def create_sentence_entry_for_translator(processid, sentences):
         data.save()
     log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
 
+
 def write_to_csv(filepath, data):
     sentence_count = 0
     unique = set()
@@ -281,3 +282,19 @@ def get_hash(text):
     encoded_str = hashlib.sha256(text.encode())
     hash_hex = encoded_str.hexdigest()
     return hash_hex
+
+
+def get_lang(target_language):
+    index_data = {
+        'hi': 'Hindi',
+        'bn': 'Bengali',
+        'gu': 'Gujarati',
+        'mr': 'Marathi',
+        'kn': 'Kannada',
+        'te': 'Telugu',
+        'ml': 'Malayalam',
+        'pa': 'Punjabi',
+        'ta': 'Tamil',
+        'en': 'English'
+    }
+    return index_data[target_language]

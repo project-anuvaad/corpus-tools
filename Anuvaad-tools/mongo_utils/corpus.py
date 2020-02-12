@@ -12,3 +12,5 @@ class Corpus(DynamicDocument):
     domain = StringField()
     name = StringField()
     type = StringField()
+    source_lang = StringField()
+    target_lang = StringField()
