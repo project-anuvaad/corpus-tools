@@ -213,8 +213,8 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                    Constants.PROCESS_ID: processId,
                    Constants.SESSION_ID: processId,
                    Constants.FILES: processId + Constants.FINAL_CSV,
-                   Constants.SOURCE_FILE: processId + Constants.SOURCE_TXT,
-                   Constants.TARGET_FILE: processId + Constants.TARGET_TXT,
+                   Constants.SOURCE_FILE: processId + '_english' + Constants.SOURCE_TXT,
+                   Constants.TARGET_FILE: processId + '_' + target_language + Constants.TARGET_TXT,
                    Constants.SENTENCE_COUNT: sentence_count,
                    Constants.SENTENCE_COUNT_REJECTED: sentence_count_rejected,
                    Constants.REJECTED_FILE: processId + '_' + Constants.REJECTED + Constants.FINAL_CSV
