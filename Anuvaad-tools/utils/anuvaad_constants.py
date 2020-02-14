@@ -59,7 +59,7 @@ ID = '_id'
 DOCS = 'docs'
 FOUND = 'found'
 _SOURCE = '_source'
-
+EN = 'en'
 ENGLISH = 'english'
 IS_COMPLETE = 'is_complete'
 COMPLETE = 'complete'
