@@ -23,14 +23,14 @@ def search_replace_thread():
                     configFilePath = message[Constants.CONFIG_FILE_LOCATION]
                     selected_files = message[Constants.SELECTED_FILES]
                     target_language = message[Constants.TARGET_LANGUAGE]
-                    source_language = message[Constants.SOURCE_LANGUAGE]
+                    source_language = Constants.ENGLISH
                     start_search_replace(processId, workspace, configFilePath, selected_files, username,
                                          source_language, target_language)
                 elif path == Constants.WRITE_TO_FILE:
                     username = message[Constants.USERNAME]
                     workspace = message[Constants.TITLE]
                     target_language = message[Constants.TARGET_LANGUAGE]
-                    source_language = message[Constants.SOURCE_LANGUAGE]
+                    source_language = Constants.ENGLISH
 
                     write_to_file(processId, username, workspace, target_language, source_language)
 
