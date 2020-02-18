@@ -63,6 +63,7 @@ EN = 'en'
 ENGLISH = 'english'
 IS_COMPLETE = 'is_complete'
 COMPLETE = 'complete'
+COMPLETED = 'COMPLETED'
 BATCH_SIZE = 25
 HASHES = 'hashes'
 TOPIC_SENTENCES_PROCESSING = 'sentenceprocessing'

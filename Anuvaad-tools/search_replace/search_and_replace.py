@@ -200,7 +200,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
 
         corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on, last_modified=created_on,
-                      author=username, status=Constants.PROCESSING, domain=Constants.DOMAIN_LC, name=workspace,
+                      author=username, status=Constants.COMPLETED, domain=Constants.DOMAIN_LC, name=workspace,
                       type=Constants.TOOL_CHAIN, source_lang=source_Language, target_lang=target_language)
         corp.save()
         create_sentence_entry_for_translator(processId, data)
