@@ -97,31 +97,34 @@ def process_file(filename, processId, workspace, targetLanguage, created_by=None
             sentences = {}
             hashes = []
             for row in data:
-                count = count + 1
                 text = row[0]
-                encoded_str = hashlib.sha256(text.encode())
-                hash_hex = encoded_str.hexdigest()
-                date_time = get_date_time()
-                all_hashes.append(hash_hex)
-                sentence = {
-                    Constants.PROCESS_ID: processId,
-                    Constants.DOCUMENT_TITLE: workspace,
-                    Constants.CREATED_DATE: date_time,
-                    Constants.CREATED_BY: created_by,
-                    Constants.SOURCE_LANG: Constants.ENGLISH,
-                    Constants.TARGET_LANGUAGE: targetLanguage,
-                    Constants.UPDATED_DATE: date_time,
-                    Constants.UPDATED_BY: update_by,
-                    Constants.DOMAIN: domain,
-                    Constants.SOURCE_SENTENCE: text,
-                    Constants.SENTENCES: [],
-                    Constants.IS_COMPLETE: False,
-                    Constants.HASH: hash_hex,
-                    Constants.FILE_NAME: filename
-                }
-                hashes.append(hash_hex)
-                sentences[hash_hex] = sentence
-
+                if len(text) > 800:
+                    count = count + 1
+                    encoded_str = hashlib.sha256(text.encode())
+                    hash_hex = encoded_str.hexdigest()
+                    date_time = get_date_time()
+                    all_hashes.append(hash_hex)
+                    sentence = {
+                        Constants.PROCESS_ID: processId,
+                        Constants.DOCUMENT_TITLE: workspace,
+                        Constants.CREATED_DATE: date_time,
+                        Constants.CREATED_BY: created_by,
+                        Constants.SOURCE_LANG: Constants.ENGLISH,
+                        Constants.TARGET_LANGUAGE: targetLanguage,
+                        Constants.UPDATED_DATE: date_time,
+                        Constants.UPDATED_BY: update_by,
+                        Constants.DOMAIN: domain,
+                        Constants.SOURCE_SENTENCE: text,
+                        Constants.SENTENCES: [],
+                        Constants.IS_COMPLETE: False,
+                        Constants.HASH: hash_hex,
+                        Constants.FILE_NAME: filename
+                    }
+                    hashes.append(hash_hex)
+                    sentences[hash_hex] = sentence
+                else:
+                    log.info('process_file : Rejecting sentence with length == '
+                             + str(len(text)) + ',  text is == ' + str(text))
                 if count == Constants.BATCH_SIZE:
                     send_for_processing(sentences, hashes, processId, targetLanguage, filename, use_latest)
                     count = 0

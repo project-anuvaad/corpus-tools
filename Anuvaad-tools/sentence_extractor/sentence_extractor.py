@@ -93,7 +93,13 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
                      + ' out of ' + str(len(paragraphs)))
             sentences = tokenizer.tokenize(text)
             log.info('extract_sentences_from_paragraphs :  sentences found ' + str(len(sentences)))
-            all_sentences = all_sentences.__add__(sentences)
+            rejected_count = 0
+            for sentence in sentences:
+                if len(sentence) > 800:
+                    all_sentences.append(sentence)
+                else:
+                    rejected_count = rejected_count + 1
+            log.info('extract_sentences_from_paragraphs :  rejected sentence count ' + str(rejected_count))
     end_time = get_current_time()
     log.info('extract_sentences_from_paragraphs :  total sentences found ' + str(len(all_sentences)))
     log.info('extract_sentences_from_paragraphs :  ended at = ' + str(end_time))
