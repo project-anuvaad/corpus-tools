@@ -254,10 +254,10 @@ def create_sentence_entry_for_translator(processid, sentences):
     log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
 
 
-def write_to_csv(filepath, data):
+def write_to_csv(filepath, data, mode=Constants.CSV_APPEND):
     sentence_count = 0
     unique = set()
-    with open(filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as file:
+    with open(filepath, mode, encoding='utf-8', errors="ignore") as file:
         writer = csv.writer(file)
         for line in data:
             if not unique.__contains__(line[Constants.SOURCE]):
@@ -313,6 +313,7 @@ def write_human_processed_corpus(processId):
         count = 0
         all_sentences = list()
         hashs_set = list()
+        all_hashes = list()
         while count < sentence_count:
             sentences = Sentence.objects(Q(basename=processId, status=Constants.ACCEPTED, completed=False) |
                                          Q(basename=processId, status=Constants.ACCEPTED, completed=None)).limit(100)
@@ -323,8 +324,10 @@ def write_human_processed_corpus(processId):
                     hashs_set.append(sentence[Constants.HASH])
                     count = count + len(hashs_set)
             Sentence.objects(basename=hashs_set).update(completed=True)
+            all_hashes = all_hashes.__add__(hashs_set)
             hashs_set.clear()
-        total_sentences_after_write = write_to_csv(filepath, all_sentences)
+        total_sentences_after_write = write_to_csv(filepath, all_sentences, mode=Constants.CSV_WRITE)
+        Sentence.objects(basename=all_hashes).update(completed=False)
 
         msg = {Constants.PATH: Constants.HUMAN_CORRECTION,
                Constants.DATA: {
