@@ -1,7 +1,7 @@
 from kafka_utils.consumer import get_consumer
 from kafka_utils.producer import send_to_kafka
 from utils.anuvaad_tools_logger import getLogger
-from search_replace.search_and_replace import start_search_replace, write_to_file
+from search_replace.search_and_replace import start_search_replace, write_to_file, write_human_processed_corpus
 from utils import anuvaad_constants as Constants
 
 log = getLogger()
@@ -33,6 +33,8 @@ def search_replace_thread():
                     source_language = Constants.EN
 
                     write_to_file(processId, username, workspace, target_language, source_language)
+                elif path == Constants.HUMAN_CORRECTION:
+                    write_human_processed_corpus(processId)
 
                 log.info('search_replace_thread : Ended for processId == '+str(processId))
             except Exception as e:

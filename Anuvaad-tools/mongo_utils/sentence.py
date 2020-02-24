@@ -8,3 +8,4 @@ class Sentence(DynamicDocument):
     status = StringField()
     corpusid = StringField()
     hash = StringField()
+    completed = BooleanField()

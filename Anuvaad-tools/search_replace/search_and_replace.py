@@ -9,6 +9,7 @@ from mongo_utils.sentence_pair import SentencePair
 from mongo_utils.sentence import Sentence
 from mongo_utils.corpus import Corpus
 import datetime
+from mongoengine.queryset.visitor import Q
 
 log = getLogger()
 
@@ -198,12 +199,13 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         data = get_all_sentences(sentences)
         x = datetime.datetime.now()
         created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
-
-        corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on, last_modified=created_on,
-                      author=username, status=Constants.COMPLETED, domain=Constants.DOMAIN_LC, name=workspace,
-                      type=Constants.TOOL_CHAIN, source_lang=source_Language, target_lang=target_language)
-        corp.save()
-        create_sentence_entry_for_translator(processId, data)
+        if len(data) > 0:
+            corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on,
+                          last_modified=created_on, author=username, status=Constants.COMPLETED,
+                          domain=Constants.DOMAIN_LC, name=workspace, type=Constants.TOOL_CHAIN,
+                          source_lang=source_Language, target_lang=target_language)
+            corp.save()
+            create_sentence_entry_for_translator(processId, data)
         filepath = base_path + '_' + Constants.REJECTED + Constants.FINAL_CSV
         sentence_count_rejected = write_to_csv(filepath, data)
 
@@ -230,7 +232,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                   + str(e))
         end_time = get_current_time()
         total_time = end_time - start_time
-        msg = {Constants.PATH: Constants.SEARCH_REPLACE,
+        msg = {Constants.PATH: Constants.ERROR_TOPIC,
                Constants.DATA: {
                    Constants.STATUS: Constants.FAILED,
                    Constants.PROCESS_ID: processId
@@ -246,7 +248,8 @@ def create_sentence_entry_for_translator(processid, sentences):
         source = sen[Constants.SOURCE]
         target = sen[Constants.TARGET]
         hash = get_hash(source)
-        data = Sentence(source=source, target=target, basename=processid, corpusid=processid, status=status, hash=hash)
+        data = Sentence(source=source, target=target, basename=processid, corpusid=processid, status=status, hash=hash,
+                        completed=False)
         data.save()
     log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
 
@@ -298,3 +301,48 @@ def get_lang(target_language):
         'en': 'English'
     }
     return index_data[target_language]
+
+
+def write_human_processed_corpus(processId):
+    log.info('write_human_processed_corpus : started for processId == ' + str(processId))
+    try:
+        base_path = Constants.BASE_PATH_TOOL_3 + processId + '/'
+        filename = processId + '_' + Constants.HUMAN_CORRECTION + Constants.CSV_EXT
+        filepath = base_path + filename
+        sentence_count = Sentence.objects(basename=processId, status=Constants.ACCEPTED).count()
+        count = 0
+        all_sentences = list()
+        hashs_set = list()
+        while count < sentence_count:
+            sentences = Sentence.objects(Q(basename=processId, status=Constants.ACCEPTED, completed=False) |
+                                         Q(basename=processId, status=Constants.ACCEPTED, completed=None)).limit(100)
+            for sentence in sentences:
+                if not hashs_set.__contains__(sentence[Constants.HASH]):
+                    data = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
+                    all_sentences.append(data)
+                    hashs_set.append(sentence[Constants.HASH])
+                    count = count + len(hashs_set)
+            Sentence.objects(basename=hashs_set).update(completed=True)
+            hashs_set.clear()
+        total_sentences_after_write = write_to_csv(filepath, all_sentences)
+
+        msg = {Constants.PATH: Constants.HUMAN_CORRECTION,
+               Constants.DATA: {
+                   Constants.STATUS: Constants.SUCCESS,
+                   Constants.PROCESS_ID: processId,
+                   Constants.SESSION_ID: processId,
+                   Constants.FILES: filename,
+                   Constants.SENTENCE_COUNT: total_sentences_after_write
+               }}
+
+        send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg)
+        log.info('write_human_processed_corpus : ended for processId == ' + str(processId))
+    except Exception as e:
+        log.error('write_human_processed_corpus : error occurred, Error is == ' + str(e))
+        msg = {Constants.PATH: Constants.ERROR_TOPIC,
+               Constants.DATA: {
+                   Constants.STATUS: Constants.FAILED,
+                   Constants.PROCESS_ID: processId,
+                   Constants.TYPE: Constants.HUMAN_CORRECTION
+               }}
+        send_to_kafka(Constants.ERROR_TOPIC, msg)
