@@ -30,7 +30,7 @@ def start_composition(processId, selected_file_names, target_language, source_la
                         source_txt.write(line[Constants.SOURCE] + '\n')
                         target_txt.write(line[Constants.TARGET] + '\n')
 
-        msg = {Constants.PATH: Constants.HUMAN_CORRECTION,
+        msg = {Constants.PATH: Constants.FILE_MERGER,
                Constants.DATA: {
                    Constants.STATUS: Constants.SUCCESS,
                    Constants.PROCESS_ID: processId,
