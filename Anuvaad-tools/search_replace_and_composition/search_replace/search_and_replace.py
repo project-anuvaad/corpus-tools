@@ -202,7 +202,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
         if len(data) > 0:
             corp = Corpus(basename=processId, no_of_sentences=len(data), created_on=created_on,
-                          last_modified=created_on, author=username, status=Constants.COMPLETED,
+                          last_modified=created_on, author=username, status=Constants.IN_PROGRESS,
                           domain=Constants.DOMAIN_LC, name=workspace, type=Constants.TOOL_CHAIN,
                           source_lang=source_Language, target_lang=target_language)
             corp.save()
