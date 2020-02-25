@@ -10,6 +10,7 @@ from mongo_utils.sentence import Sentence
 from mongo_utils.corpus import Corpus
 import datetime
 from mongoengine.queryset.visitor import Q
+from utils.file_util import write_to_csv
 
 log = getLogger()
 
@@ -252,19 +253,6 @@ def create_sentence_entry_for_translator(processid, sentences):
                         completed=False)
         data.save()
     log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
-
-
-def write_to_csv(filepath, data, mode=Constants.CSV_APPEND):
-    sentence_count = 0
-    unique = set()
-    with open(filepath, mode, encoding='utf-8', errors="ignore") as file:
-        writer = csv.writer(file)
-        for line in data:
-            if not unique.__contains__(line[Constants.SOURCE]):
-                unique.add(line[Constants.SOURCE])
-                sentence_count = sentence_count + 1
-                writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
-    return sentence_count
 
 
 def get_all_sentences(sentences):

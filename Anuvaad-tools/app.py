@@ -9,6 +9,7 @@ from utils.anuvaad_tools_logger import getLogger
 from api.tool_server_check_api import health_check_api
 from api.machine_translation_api import mt_api
 from mongo_utils.mongo_connect import connect_mongo
+from compositioner.composition_runner import start_composition
 import threading
 
 app = Flask(__name__)
@@ -31,7 +32,8 @@ try:
     t3.start()
     t5 = threading.Thread(target=search_replace_thread, name='search and replace')
     t5.start()
-
+    t6 = threading.Thread(target=start_composition, name='composition')
+    t6.start()
 
     log.info('all_thread started ')
 

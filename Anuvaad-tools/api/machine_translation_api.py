@@ -1,10 +1,12 @@
 from flask import Blueprint, request
 import utils.anuvaad_constants as Constants
 import logging
+
+from utils.file_util import read_csv
 from utils.timeutils import get_current_time
 from models.response import CustomResponse
 from models.status import Status
-from machine_translator.machine_translator import check_file_validity, get_index, read_csv, get_hash, \
+from machine_translator.machine_translator import check_file_validity, get_index, get_hash, \
     check_elastic_for_new_sentences
 
 mt_api = Blueprint('mt_api', __name__)
@@ -29,7 +31,9 @@ def calculate_stats():
             unique_ = set()
             index = get_index(targetLanguage)
             for file in sourceFiles:
-                data = read_csv(file, processId)
+                base_path = Constants.BASE_PATH_MT + processId
+                file_path = base_path + '/' + file
+                data = read_csv(file_path, processId)
                 for text in data:
                     hash_ = get_hash(text)
                     if not unique_.__contains__(hash_):

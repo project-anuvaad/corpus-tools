@@ -5,6 +5,7 @@ from sentence_extractor.custom_nltk_tokenizer import get_tokenizer_english_pickl
 from sentence_extractor.utils import write_to_csv
 from kafka_utils.producer import send_to_kafka
 import utils.anuvaad_constants as Constants
+from utils.file_util import read_csv
 import csv
 import sys
 
@@ -24,7 +25,7 @@ def start_sentence_extraction(configFilePath, posTokenFilePath, negTokenFilePath
         sentence_end_characters = config[Constants.SEC]
         specific_file_header = config[Constants.SFILE_HEADER]
         tokenizer = load_tokenizer(tokens, config, sentence_end_characters)
-        paragraphs = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
+        paragraphs = read_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + paragraphFilePath)
         log.info('start_sentence_extraction : paragraphs found == ' + str(len(paragraphs)))
         sentences = extract_sentences_from_paragraphs(tokenizer, paragraphs)
         log.info('start_sentence_extraction : sentences found == ' + str(len(sentences)))
@@ -138,20 +139,9 @@ def load_exclusive_tokens(config):
 def load_tokens(config, posTokenFilePath, negTokenFilePath, processId):
     start_time = get_current_time()
     log.info('load_tokens : started at ' + str(start_time))
-    positiveTokens = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + posTokenFilePath)
-    negativeTokens = read_data_from_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + negTokenFilePath)
+    positiveTokens = read_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + posTokenFilePath)
+    negativeTokens = read_csv(Constants.BASE_PATH_TOOL_1 + processId + "/" + negTokenFilePath)
     tokens = [x for x in positiveTokens if x not in negativeTokens]
     end_time = get_current_time()
     log.info('load_tokens : ended at ' + str(end_time))
-    return tokens
-
-
-def read_data_from_csv(filePath):
-    tokens = []
-    with open(filePath, 'rt') as file:
-        data = csv.reader(file)
-        for row in data:
-            text = row[0]
-            tokens.append(text)
-        file.close()
     return tokens

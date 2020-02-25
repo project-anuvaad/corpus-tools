@@ -4,6 +4,7 @@ from kafka_utils.producer import send_to_kafka
 from utils.timeutils import get_current_time, get_date_time
 import time
 from elastic_utils.es_utils import create_sentence, update, get_all_by_ids, create
+from utils.file_util import write_to_csv
 
 import hashlib
 import csv
@@ -132,7 +133,8 @@ def process_file(filename, processId, workspace, targetLanguage, created_by=None
                     hashes.clear()
             if len(sentences) > 0:
                 send_for_processing(sentences, hashes, processId, targetLanguage, filename, use_latest)
-            write_to_csv(all_hashes, filename)
+            hash_file_name = change_csv_filename(filename, '_h')
+            write_to_csv(hash_file_name, all_hashes, rows=1)
     except Exception as e:
         log.error('process_file : Error occurred for filename ==  ' + str(filename) + ', processId == ' + str(processId)
                   + ', Error is == ' + str(e))
@@ -155,16 +157,6 @@ def send_for_processing(sentences, hashes, processId, targetLanguage, filename, 
         log.info('send_for_processing : sentences sent to next step with body == ' + str(message))
     except Exception as e:
         log.error('send_for_processing : Error occurred for sending sentences in next step, Error is ==  ' + str(e))
-
-
-def write_to_csv(data, filename):
-    filename = change_csv_filename(filename, '_h')
-    with open(filename, Constants.CSV_WRITE) as file:
-        writer = csv.writer(file)
-        for line in data:
-            writer.writerow([line])
-        file.close()
-    return filename
 
 
 def check_and_translate(message):
@@ -339,7 +331,7 @@ def check_elastic_for_new_sentences(hashs, index):
         hash_list.append(hash_)
         count = count + 1
         if count == 100:
-            data = get_all_by_ids(hash_list,index)
+            data = get_all_by_ids(hash_list, index)
             already_present = already_present + len(data.keys())
             count = 0
             hash_list.clear()
@@ -350,20 +342,7 @@ def check_elastic_for_new_sentences(hashs, index):
     return already_present
 
 
-
-
 def get_hash(text):
     encoded_str = hashlib.sha256(text.encode())
     hash_hex = encoded_str.hexdigest()
     return hash_hex
-
-
-def read_csv(file, processId):
-    unique = list()
-    base_path = Constants.BASE_PATH_MT + processId
-    filepath = base_path + '/' + file
-    with open(filepath, Constants.CSV_RT) as source:
-        reader = csv.reader(source)
-        for line in reader:
-            unique.append(line[0])
-    return unique
