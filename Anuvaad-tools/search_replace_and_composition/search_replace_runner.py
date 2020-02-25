@@ -15,7 +15,7 @@ def search_replace_and_composition_thread():
         consumer = get_consumer([Constants.TOPIC_SEARCH_REPLACE, Constants.COMPOSITION])
 
         for msg in consumer:
-            log.info('search_replace_and_composition_thread : message is == ' + str(msg.topic))
+            log.info('search_replace_and_composition_thread : message is == ' + str(msg))
 
             if msg.topic == Constants.TOPIC_SEARCH_REPLACE:
                 search_replace(msg)
@@ -28,6 +28,7 @@ def search_replace_and_composition_thread():
 
 
 def composition(msg):
+    log.info('composition : started')
     message = msg.value[Constants.DATA]
     path = msg.value[Constants.PATH]
     processId = message[Constants.SESSION_ID]
@@ -37,6 +38,7 @@ def composition(msg):
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
             start_composition(processId, selected_files, target_language, source_language)
+            log.info('composition : ended')
         except Exception as e:
             log.error('search_replace_and_composition_thread : for composition :' +
                       ' ERROR OCCURRED ERROR is == ' + str(e))
@@ -50,7 +52,7 @@ def composition(msg):
 
 def search_replace(msg):
     try:
-        log.info('search_replace_and_composition : message for queue == ' + str(msg))
+        log.info('search_replace_and_composition : started')
         message = msg.value[Constants.DATA]
         path = msg.value[Constants.PATH]
         processId = message[Constants.SESSION_ID]
