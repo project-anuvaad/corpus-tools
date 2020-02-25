@@ -8,7 +8,8 @@ log = getLogger()
 
 def start_composition(processId, selected_file_names, target_language, source_language):
     try:
-        base_path = Constants.BASE_PATH_TOOL_3 + processId + '/'
+        log.info('start_composition : started')
+        base_path = Constants.BASE_PATH_TOOL_4 + processId + '/'
         source_file_name = processId + '_' + source_language + Constants.SOURCE_TXT
         target_file_name = processId + '_' + target_language + Constants.TARGET_TXT
         merger_file_name = processId + Constants.FINAL_CSV
@@ -41,7 +42,7 @@ def start_composition(processId, selected_file_names, target_language, source_la
                }}
 
         send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg)
-
+        log.info('start_composition : ended for processId == ' + str(processId))
     except Exception as e:
         log.error('start_composition : ERROR OCCURRED ERROR is == ' + str(e))
         try:

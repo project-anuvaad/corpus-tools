@@ -1,6 +1,7 @@
 BASE_PATH_TOOL_1 = "corpusfiles/processing/pipeline_stage_1/"
 BASE_PATH_MT = "corpusfiles/processing/pipeline_stage_2/"
 BASE_PATH_TOOL_3 = "corpusfiles/processing/pipeline_stage_3/"
+BASE_PATH_TOOL_4 = "corpusfiles/processing/pipeline_stage_4/"
 
 ERROR_TOPIC = 'toolerror'
 EXTRACTOR_RESPONSE = 'tokenprocessed'
@@ -88,7 +89,6 @@ _HASH = '_hash'
 
 FILE_INDEX = 'file_index'
 
-
 TOPIC_SEARCH_REPLACE = 'searchreplace'
 SEARCH_REPLACE = 'search_replace'
 WRITE_TO_FILE = 'write_to_file'
@@ -119,3 +119,8 @@ ACCEPTED = 'ACCEPTED'
 CSV_EXT = '.csv'
 COMPOSITION = 'composition'
 FILE_MERGER = 'file_merger'
+TOPIC = 'topic'
+TOPIC_SENTENCE_EXTRACTOR = 'sentencesext'
+TOPIC_TOKEN_EXTRACTOR = 'tokenext'
+TOKEN_EXTRACTOR = 'token_extraction'
+SENTENCES_EXTRACTOR = 'sentences_extraction'

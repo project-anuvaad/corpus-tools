@@ -12,86 +12,85 @@ log = getLogger()
 def machine_translation_thread():
     try:
         log.info('machine_translation_thread : started')
-        consumer = get_consumer(Constants.TOPIC_MACHINE_TRANSLATION)
+        consumer = get_consumer([Constants.TOPIC_MACHINE_TRANSLATION, Constants.TOPIC_FETCHER])
         for msg in consumer:
-            try:
-                log.info('machine_translation_thread : message for queue == ' + str(msg))
-
-                message = msg.value[Constants.DATA]
-                sourceFiles = message[Constants.SELECTED_FILES]
-                targetLanguage = message[Constants.TARGET_LANGUAGE]
-                processId = message[Constants.SESSION_ID]
-                workspace = message[Constants.TITLE]
-                created_by = message[Constants.CREATED_BY]
-                domain = None
-                use_latest = message[Constants.USE_LATEST]
-
-                start_machine_translation(processId, workspace, sourceFiles, targetLanguage,
-                                          created_by, None, domain, use_latest)
-                log.info('machine_translation_thread : Ended for processId == ' + str(processId))
-            except Exception as e:
-
-                log.error('machine_translation_thread : ERROR OCCURRED ERROR is == ' + str(e))
-                data = {'path': 'mt',
-                        'data': {
-                            'status': False,
-                            'processId': processId
-                        }}
-                send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)
+            if msg.topic == Constants.TOPIC_MACHINE_TRANSLATION:
+                machine_translation(msg)
+            elif msg.topic == Constants.TOPIC_FETCHER:
+                translation_fetcher_and_writer(msg)
     except Exception as e:
         log.error('machine_translation_thread : Error occurred while getting consumer for topic == ' +
                   str(Constants.TOPIC_MACHINE_TRANSLATION) + ' ERROR is == ' + str(e))
 
 
-def translation_fetcher_and_writer_thread():
+def machine_translation(msg):
     try:
-        log.info('translation_fetcher_and_writer_thread : started')
-        consumer = get_consumer(Constants.TOPIC_FETCHER)
-        for msg in consumer:
-            try:
-                log.info('translation_fetcher_and_writer_thread : message for queue == ' + str(msg))
-                message = msg.value[Constants.DATA]
+        log.info('machine_translation : message for queue == ' + str(msg))
 
-                type_ = message[Constants.TYPE]
-                if type_ == Constants.TRANSLATE:
-                    check_and_translate(message)
-                elif type_ == Constants.WRITE_CSV:
-                    filename_t = write_csv_for_translation(message)
-                    process_id = message[Constants.PROCESS_ID]
-                    es_response = get_all_by_ids([process_id], Constants.FILE_INDEX)
-                    source = es_response[process_id]
-                    sent = source[Constants.FILE_COUNT]
-                    received = source[Constants.COMPLETE]
-                    all_files = source[Constants.FILES]
-                    basepath = source[Constants.PATH]
-                    if received + 1 == sent:
-                        merged_file_name, no_of_sentences = merge_files(all_files, process_id, basepath)
-                        message = {
-                            Constants.FILE_NAME: merged_file_name,
-                            Constants.STATUS: Constants.SUCCESS,
-                            Constants.PROCESS_ID: process_id,
-                            Constants.SENTENCE_COUNT: no_of_sentences
-                        }
-                        data = {Constants.PATH: 'mt', Constants.DATA: message}
-                        log.info('translation_fetcher_and_writer_thread : message sent  == ' + str(data))
-                        send_to_kafka(topic=Constants.EXTRACTOR_RESPONSE, value=data)
-                    else:
-                        body = {Constants.COMPLETE: received + 1}
-                        update(process_id, Constants.FILE_INDEX, body)
+        message = msg.value[Constants.DATA]
+        sourceFiles = message[Constants.SELECTED_FILES]
+        targetLanguage = message[Constants.TARGET_LANGUAGE]
+        processId = message[Constants.SESSION_ID]
+        workspace = message[Constants.TITLE]
+        created_by = message[Constants.CREATED_BY]
+        domain = None
+        use_latest = message[Constants.USE_LATEST]
 
-                    log.info('translation_fetcher_and_writer_thread : process completed for process id == '
-                             + str(process_id))
-
-                log.info('translation_fetcher_and_writer_thread : Ended ')
-            except Exception as e:
-                log.error('translation_fetcher_and_writer_thread : ERROR OCCURRED ERROR is == ' + str(e))
-                message = {
-                    Constants.STATUS: Constants.FAILED,
-                    Constants.PROCESS_ID: process_id
-                }
-                data = {Constants.DATA: message}
-                send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)
-
+        start_machine_translation(processId, workspace, sourceFiles, targetLanguage,
+                                  created_by, None, domain, use_latest)
+        log.info('machine_translation : Ended for processId == ' + str(processId))
     except Exception as e:
-        log.error('translation_fetcher_and_writer_thread : Error occurred while getting consumer for topic == ' +
-                  str(Constants.TOPIC_FETCHER) + ' ERROR is == ' + str(e))
+
+        log.error('machine_translation : ERROR OCCURRED ERROR is == ' + str(e))
+        data = {'path': 'mt',
+                'data': {
+                    'status': False,
+                    'processId': processId
+                }}
+        send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)
+
+
+def translation_fetcher_and_writer(msg):
+    try:
+        log.info('translation_fetcher_and_writer : message for queue == ' + str(msg))
+        message = msg.value[Constants.DATA]
+
+        type_ = message[Constants.TYPE]
+        if type_ == Constants.TRANSLATE:
+            check_and_translate(message)
+        elif type_ == Constants.WRITE_CSV:
+            filename_t = write_csv_for_translation(message)
+            process_id = message[Constants.PROCESS_ID]
+            es_response = get_all_by_ids([process_id], Constants.FILE_INDEX)
+            source = es_response[process_id]
+            sent = source[Constants.FILE_COUNT]
+            received = source[Constants.COMPLETE]
+            all_files = source[Constants.FILES]
+            basepath = source[Constants.PATH]
+            if received + 1 == sent:
+                merged_file_name, no_of_sentences = merge_files(all_files, process_id, basepath)
+                message = {
+                    Constants.FILE_NAME: merged_file_name,
+                    Constants.STATUS: Constants.SUCCESS,
+                    Constants.PROCESS_ID: process_id,
+                    Constants.SENTENCE_COUNT: no_of_sentences
+                }
+                data = {Constants.PATH: 'mt', Constants.DATA: message}
+                log.info('translation_fetcher_and_writer : message sent  == ' + str(data))
+                send_to_kafka(topic=Constants.EXTRACTOR_RESPONSE, value=data)
+            else:
+                body = {Constants.COMPLETE: received + 1}
+                update(process_id, Constants.FILE_INDEX, body)
+
+            log.info('translation_fetcher_and_writer : process completed for process id == '
+                     + str(process_id))
+
+        log.info('translation_fetcher_and_writer : Ended ')
+    except Exception as e:
+        log.error('translation_fetcher_and_writer : ERROR OCCURRED ERROR is == ' + str(e))
+        message = {
+            Constants.STATUS: Constants.FAILED,
+            Constants.PROCESS_ID: process_id
+        }
+        data = {Constants.PATH: 'mt', Constants.DATA: message}
+        send_to_kafka(topic=Constants.ERROR_TOPIC, value=data)

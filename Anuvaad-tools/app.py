@@ -1,15 +1,12 @@
 from flask import Flask
 
-from sentence_extractor.token_ext_runner import extract_tokens_thread
-from sentence_extractor.sentence_ext_runner import extract_sentences_thread
-from machine_translator.machine_translator_runner import translation_fetcher_and_writer_thread
+from sentence_extractor.tokens_and_sentences_ext_runner import tokens_and_sentences_ext_thread
 from machine_translator.machine_translator_runner import machine_translation_thread
-from search_replace.search_replace_runner import search_replace_thread
+from search_replace_and_composition.search_replace_runner import search_replace_and_composition_thread
 from utils.anuvaad_tools_logger import getLogger
 from api.tool_server_check_api import health_check_api
 from api.machine_translation_api import mt_api
 from mongo_utils.mongo_connect import connect_mongo
-from compositioner.composition_runner import start_composition
 import threading
 
 app = Flask(__name__)
@@ -21,19 +18,15 @@ connect_mongo()
 
 try:
     log.info('Starting Threads ')
-    t1 = threading.Thread(target=extract_tokens_thread, name='token_extractor')
+    t1 = threading.Thread(target=tokens_and_sentences_ext_thread, name='tokens_and_sentences_extractor')
     t1.start()
-    log.info('extract_token_thread started')
-    t2 = threading.Thread(target=extract_sentences_thread, name='sentence_extractor')
+    log.info('tokens_and_sentences_extractor started')
+    t2 = threading.Thread(target=machine_translation_thread, name='machine_translation')
     t2.start()
-    t4 = threading.Thread(target=translation_fetcher_and_writer_thread, name='machine_translation_2')
-    t4.start()
-    t3 = threading.Thread(target=machine_translation_thread, name='machine_translation_1')
+    log.info('machine_translation started')
+    t3 = threading.Thread(target=search_replace_and_composition_thread, name='search_replace_and_composition')
     t3.start()
-    t5 = threading.Thread(target=search_replace_thread, name='search and replace')
-    t5.start()
-    t6 = threading.Thread(target=start_composition, name='composition')
-    t6.start()
+    log.info('search_replace_and_composition started')
 
     log.info('all_thread started ')
 

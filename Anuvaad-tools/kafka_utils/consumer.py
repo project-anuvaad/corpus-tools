@@ -13,14 +13,15 @@ bootstrap_server = os.environ.get(kafka_ip_host, default_value)
 def get_consumer(topic):
     try:
         consumer = KafkaConsumer(
-            topic,
-            bootstrap_servers=[bootstrap_server],
-            value_deserializer=lambda x: handle_json(x))
 
-        log.info('get_consumer : consumer returned for topic = ' + topic)
+            bootstrap_servers=[bootstrap_server],
+            value_deserializer=lambda x: handle_json(x),
+           )
+        consumer.subscribe(topic)
+        log.info('get_consumer : consumer returned for topic = ' + str(topic))
         return consumer
     except Exception as e:
-        log.error('get_consumer : ERROR OCCURRED for getting consumer with topic = ' + topic)
+        log.error('get_consumer : ERROR OCCURRED for getting consumer with topic = ' + str(topic))
         log.error('get_consumer : ERROR = ' + str(e))
         print('error')
         return None
