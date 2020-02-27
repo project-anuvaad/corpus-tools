@@ -12,5 +12,5 @@ class SentencePair(DynamicDocument):
     in_review = BooleanField()
     review_completed = BooleanField()
     update_corpus = BooleanField()
-    hash_ = StringField()
+    hash = StringField()
     is_alone = BooleanField()

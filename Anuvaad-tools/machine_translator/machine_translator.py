@@ -5,9 +5,12 @@ from utils.timeutils import get_current_time, get_date_time
 import time
 from elastic_utils.es_utils import create_sentence, update, get_all_by_ids, create
 from utils.file_util import write_to_csv
-
+from mongo_utils.corpus import Corpus
+from utils.project_utils import get_index, contains_english_characters, get_hash
+from mongo_utils.mongo_utils import create_sentence_entry_for_translator
 import hashlib
 import csv
+import datetime
 
 log = getLogger()
 
@@ -19,7 +22,7 @@ def start_machine_translation(processId, workspace, sourceFiles, targetLanguage,
     try:
         validation = check_file_validity(processId, sourceFiles)
         if validation[Constants.STATUS]:
-
+            file_write_messages = []
             for file in sourceFiles:
                 file_count = len(sourceFiles)
                 basepath = Constants.BASE_PATH_MT + processId + '/'
@@ -44,6 +47,8 @@ def start_machine_translation(processId, workspace, sourceFiles, targetLanguage,
                     Constants.INDEX: index,
                     Constants.PROCESS_ID: processId
                 }
+                file_write_messages.append(message)
+            for message in file_write_messages:
                 data = {Constants.DATA: message}
                 send_to_kafka(topic=Constants.TOPIC_FETCHER, value=data)
 
@@ -99,7 +104,8 @@ def process_file(filename, processId, workspace, targetLanguage, created_by=None
             hashes = []
             for row in data:
                 text = row[0]
-                if len(text) > 800:
+
+                if len(text) < 800 and not contains_english_characters(text):
                     count = count + 1
                     encoded_str = hashlib.sha256(text.encode())
                     hash_hex = encoded_str.hexdigest()
@@ -179,6 +185,7 @@ def check_and_translate(message):
                 translated_sentence = translated_sentences[0][Constants.TARGET]
                 sentence[Constants.TARGET_SENTENCE] = translated_sentence
                 sentence[Constants.UPDATED_DATE] = get_date_time()
+                sentence[Constants.IS_TRANSLATION_COMPLETED] = contains_english_characters(translated_sentence)
                 target_sentence = create_target_sentence(sentence, filename)
                 sentence[Constants.TARGET_SENTENCES].append(target_sentence)
                 update(id_=key, index=index, body=sentence)
@@ -206,10 +213,10 @@ def translate_and_create_es(sentences, targetLanguage, filename, index):
             hash_hex = get_hash(text)
             sentence = sentences[hash_hex]
             sentence[Constants.TARGET_SENTENCE] = translated_sentence[Constants.TARGET]
-            log.info('Before create target_sentence')
+            sentence[Constants.IS_TRANSLATION_COMPLETED] = \
+                contains_english_characters(translated_sentence[Constants.TARGET])
             target_sentence = create_target_sentence(sentence, filename)
             sentence[Constants.TARGET_SENTENCES] = [target_sentence]
-            log.info('Before create')
             create_sentence(sentence, index)
 
 
@@ -240,39 +247,69 @@ def write_csv_for_translation(message):
     filename_t = change_csv_filename(message[Constants.FILE_NAME], '_t')
     filename_h = change_csv_filename(message[Constants.FILE_NAME], '_h')
     index = message[Constants.INDEX]
+    processId = message[Constants.PROCESS_ID]
+    junk_corpus_sentences = list()
     try:
         with open(filename_h, Constants.CSV_RT) as file:
             with open(filename_t, Constants.CSV_WRITE) as target:
                 writer = csv.writer(target)
                 data = csv.reader(file)
+                ids = list()
                 for row in data:
-                    text = row[0]
-                    es_response = get_all_by_ids([text], index)
-                    source = es_response[text]
-                    translated_text = source[Constants.TARGET_SENTENCE]
-                    source_text = source[Constants.SOURCE_SENTENCE]
-                    writer.writerow([source_text, translated_text])
+                    _id = row[0]
+                    ids.append(_id)
+                    if len(ids) == 100:
+                        es_responses = get_all_by_ids(ids, index)
+                        for id_ in ids:
+                            source = es_responses[id_]
+                            translated_text = source[Constants.TARGET_SENTENCE]
+                            is_complete = source[Constants.IS_TRANSLATION_COMPLETED]
+                            source_text = source[Constants.SOURCE_SENTENCE]
+                            if is_complete is None or is_complete is True:
+                                writer.writerow([source_text, translated_text])
+                            else:
+                                junk_corpus_sentences.append(source)
+                        ids.clear()
+                if len(ids) > 0:
+                    for id_ in ids:
+                        source = es_responses[id_]
+                        translated_text = source[Constants.TARGET_SENTENCE]
+                        source_text = source[Constants.SOURCE_SENTENCE]
+                        if is_complete is None or is_complete is True:
+                            writer.writerow([source_text, translated_text])
+                        else:
+                            junk_corpus_sentences.append(source)
+                    ids.clear()
                 target.close()
             file.close()
+            create_corpus_for_translator(junk_corpus_sentences, processId)
+        log.info('write_csv_for_translation : ended for filename == ' + str(message[Constants.FILE_NAME]))
         return filename_t
     except Exception as e:
-        log.error('write_csv_for_translation : error occured for fetching and writing translation,'
+        log.error('write_csv_for_translation : error occurred for fetching and writing translation,'
                   + ' Error is == ' + str(e))
 
 
-def get_index(target_language):
-    index_data = {
-        'hi': 'en-hi',
-        'bn': 'en-bn',
-        'gu': 'en-gu',
-        'mr': 'en-mr',
-        'kn': 'en-kn',
-        'te': 'en-te',
-        'ml': 'en-ml',
-        'pa': 'en-pa',
-        'ta': 'en-ta'
-    }
-    return index_data[target_language]
+def create_corpus_for_translator(sentences, processId):
+    log.info('create_corpus_for_translator : started for processId == ' + str(processId))
+    corpus = Corpus.objects(basename=processId)
+    if len(corpus) == 0:
+        x = datetime.datetime.now()
+        created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
+        sentence = sentences[0]
+        corpus = Corpus(basename=processId, no_of_sentences=len(sentences), created_on=created_on,
+                        last_modified=created_on, status=Constants.IN_PROGRESS,
+                        domain=Constants.DOMAIN_LC, type=Constants.TOOL_CHAIN,
+                        source_lang=sentence[Constants.SOURCE_LANGUAGE],
+                        target_lang=sentence[Constants.TARGET_LANGUAGE])
+        corpus.save()
+    else:
+        corpus = corpus[0]
+        length = corpus[Constants.NO_OF_SENTENCES] + len(sentences)
+        Corpus.objects(basename=processId).update(no_of_sentences=length)
+
+    create_sentence_entry_for_translator(processId, sentences)
+    log.info('create_corpus_for_translator : ended for processId == ' + str(processId))
 
 
 def create_target_sentence(sentence, filename):
@@ -340,9 +377,3 @@ def check_elastic_for_new_sentences(hashs, index):
         already_present = already_present + len(data.keys())
         hash_list.clear()
     return already_present
-
-
-def get_hash(text):
-    encoded_str = hashlib.sha256(text.encode())
-    hash_hex = encoded_str.hexdigest()
-    return hash_hex

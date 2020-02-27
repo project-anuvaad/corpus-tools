@@ -11,7 +11,9 @@ from mongo_utils.corpus import Corpus
 import datetime
 from mongoengine.queryset.visitor import Q
 from utils.file_util import write_to_csv
-
+from mongo_utils.mongo_utils import create_sentence_entry_for_translator
+from elastic_utils.es_utils import update
+from utils.project_utils import get_index, get_hash, contains_english_characters, get_lang
 log = getLogger()
 
 
@@ -106,7 +108,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                         if length == 0:
                             create_entry(processId, changes, new_target, source, target, 1, True, hash_)
                         else:
-                            SentencePair.objects(processId=processId, hash_=hash_).update(is_alone=False)
+                            SentencePair.objects(processId=processId, hash=hash_).update(is_alone=False)
                             create_entry(processId, changes, new_target, source, target, length + 1, False, hash_)
                         break
                 if len(changes) == 0:
@@ -128,7 +130,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
 def create_entry(processId, changes, target_update, source, target, serial_no, is_alone, hash_):
     sen = SentencePair(processId=processId, changes=changes, updated=target_update, accepted=False,
                        source=source, target=target, serial_no=serial_no, in_review=False,
-                       review_completed=False, is_alone=is_alone, hash_=hash_)
+                       review_completed=False, is_alone=is_alone, hash=hash_)
     sen.save()
 
 
@@ -242,19 +244,6 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         log.info('write_to_file : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
 
 
-def create_sentence_entry_for_translator(processid, sentences):
-    log.info('create_sentence_entry_for_translator : started for processid == ' + str(processid))
-    status = Constants.PROCESSING
-    for sen in sentences:
-        source = sen[Constants.SOURCE]
-        target = sen[Constants.TARGET]
-        hash = get_hash(source)
-        data = Sentence(source=source, target=target, basename=processid, corpusid=processid, status=status, hash=hash,
-                        completed=False)
-        data.save()
-    log.info('create_sentence_entry_for_translator : ended for processid == ' + str(processid))
-
-
 def get_all_sentences(sentences):
     log.info('get_all_sentences : started')
     data = list()
@@ -262,33 +251,12 @@ def get_all_sentences(sentences):
     for sentence in sentences:
         source = sentence[Constants.SOURCE]
         if not unique.__contains__(source):
-            res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET]}
+            res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET],
+                   Constants.HASH: sentence[Constants.HASH]}
             data.append(res)
             unique.add(source)
     log.info('get_all_sentences : ended')
     return data
-
-
-def get_hash(text):
-    encoded_str = hashlib.sha256(text.encode())
-    hash_hex = encoded_str.hexdigest()
-    return hash_hex
-
-
-def get_lang(target_language):
-    index_data = {
-        'hi': 'Hindi',
-        'bn': 'Bengali',
-        'gu': 'Gujarati',
-        'mr': 'Marathi',
-        'kn': 'Kannada',
-        'te': 'Telugu',
-        'ml': 'Malayalam',
-        'pa': 'Punjabi',
-        'ta': 'Tamil',
-        'en': 'English'
-    }
-    return index_data[target_language]
 
 
 def write_human_processed_corpus(processId):
@@ -298,6 +266,9 @@ def write_human_processed_corpus(processId):
         filename = processId + '_' + Constants.HUMAN_CORRECTION + Constants.CSV_EXT
         filepath = base_path + filename
         sentence_count = Sentence.objects(basename=processId, status=Constants.ACCEPTED).count()
+        corpus = Corpus.objects(basename=processId)
+        target_language = corpus[0]['target_lang']
+        index = get_index(target_language)
         count = 0
         all_sentences = list()
         hashs_set = list()
@@ -308,6 +279,11 @@ def write_human_processed_corpus(processId):
             for sentence in sentences:
                 if not hashs_set.__contains__(sentence[Constants.HASH]):
                     data = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
+                    es_data = {Constants.SOURCE: sentence[Constants.SOURCE],
+                               Constants.TARGET: sentence[Constants.TARGET],
+                               Constants.IS_TRANSLATION_COMPLETED: contains_english_characters(sentence[Constants.TARGET])
+                               }
+                    update(sentence[Constants.HASH], index, es_data)
                     all_sentences.append(data)
                     hashs_set.append(sentence[Constants.HASH])
                     count = count + len(hashs_set)
