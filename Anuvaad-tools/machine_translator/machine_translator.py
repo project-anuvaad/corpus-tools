@@ -285,7 +285,8 @@ def write_csv_for_translation(message):
                     ids.clear()
                 target.close()
             file.close()
-            create_corpus_for_translator(junk_corpus_sentences, processId)
+            if len(junk_corpus_sentences) > 0:
+                create_corpus_for_translator(junk_corpus_sentences, processId)
         log.info('write_csv_for_translation : ended for filename == ' + str(message[Constants.FILE_NAME]))
         return filename_t
     except Exception as e:
