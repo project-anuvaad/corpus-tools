@@ -6,7 +6,7 @@ import time
 from elastic_utils.es_utils import create_sentence, update, get_all_by_ids, create
 from utils.file_util import write_to_csv
 from mongo_utils.corpus import Corpus
-from utils.project_utils import get_index, contains_english_characters, get_hash, isEnglish
+from utils.project_utils import get_index, contains_english_characters, get_hash, isEnglish, get_value
 from mongo_utils.mongo_utils import create_sentence_entry_for_translator
 import hashlib
 import csv
@@ -263,7 +263,7 @@ def write_csv_for_translation(message):
                         for id_ in ids:
                             source = es_responses[id_]
                             translated_text = source[Constants.TARGET_SENTENCE]
-                            is_complete = source[Constants.IS_TRANSLATION_COMPLETED]
+                            is_complete = get_value(source, Constants.IS_TRANSLATION_COMPLETED)
                             source_text = source[Constants.SOURCE_SENTENCE]
                             if is_complete is None or is_complete is True:
                                 writer.writerow([source_text, translated_text])
