@@ -6,7 +6,7 @@ import time
 from elastic_utils.es_utils import create_sentence, update, get_all_by_ids, create
 from utils.file_util import write_to_csv
 from mongo_utils.corpus import Corpus
-from utils.project_utils import get_index, contains_english_characters, get_hash
+from utils.project_utils import get_index, contains_english_characters, get_hash, isEnglish
 from mongo_utils.mongo_utils import create_sentence_entry_for_translator
 import hashlib
 import csv
@@ -105,7 +105,7 @@ def process_file(filename, processId, workspace, targetLanguage, created_by=None
             for row in data:
                 text = row[0]
 
-                if len(text) < 1000 and not contains_english_characters(text):
+                if len(text) < 1000 and isEnglish(text):
                     count = count + 1
                     encoded_str = hashlib.sha256(text.encode())
                     hash_hex = encoded_str.hexdigest()
