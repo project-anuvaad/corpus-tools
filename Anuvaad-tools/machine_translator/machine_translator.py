@@ -260,9 +260,9 @@ def write_csv_for_translation(message):
                     ids.append(_id)
                     if len(ids) == 100:
                         es_responses = get_all_by_ids(ids, index)
-                        ids = es_responses.keys()
-                        for id_ in ids:
-                            source = es_responses[id_]
+                        keys = es_responses.keys()
+                        for key in keys:
+                            source = es_responses[key]
                             translated_text = source[Constants.TARGET_SENTENCE]
                             is_complete = get_value(source, Constants.IS_TRANSLATION_COMPLETED)
                             source_text = source[Constants.SOURCE_SENTENCE]
@@ -272,9 +272,10 @@ def write_csv_for_translation(message):
                                 junk_corpus_sentences.append(source)
                         ids.clear()
                 if len(ids) > 0:
-                    ids = es_responses.keys()
-                    for id_ in ids:
-                        source = es_responses[id_]
+                    es_responses = get_all_by_ids(ids, index)
+                    keys = es_responses.keys()
+                    for key in keys:
+                        source = es_responses[key]
                         translated_text = source[Constants.TARGET_SENTENCE]
                         source_text = source[Constants.SOURCE_SENTENCE]
                         if is_complete is None or is_complete is True:
