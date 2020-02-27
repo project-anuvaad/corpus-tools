@@ -105,7 +105,7 @@ def process_file(filename, processId, workspace, targetLanguage, created_by=None
             for row in data:
                 text = row[0]
 
-                if len(text) < 800 and not contains_english_characters(text):
+                if len(text) < 1000 and not contains_english_characters(text):
                     count = count + 1
                     encoded_str = hashlib.sha256(text.encode())
                     hash_hex = encoded_str.hexdigest()
