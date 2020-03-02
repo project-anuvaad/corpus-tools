@@ -296,24 +296,28 @@ def write_csv_for_translation(message):
 
 def create_corpus_for_translator(sentences, processId):
     log.info('create_corpus_for_translator : started for processId == ' + str(processId))
-    corpus = Corpus.objects(basename=processId)
-    if len(corpus) == 0:
-        x = datetime.datetime.now()
-        created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
-        sentence = sentences[0]
-        corpus = Corpus(basename=processId, no_of_sentences=len(sentences), created_on=created_on,
-                        last_modified=created_on, status=Constants.IN_PROGRESS,
-                        domain=Constants.DOMAIN_LC, type=Constants.TOOL_CHAIN,
-                        source_lang=sentence[Constants.SOURCE_LANGUAGE],
-                        target_lang=sentence[Constants.TARGET_LANGUAGE])
-        corpus.save()
-    else:
-        corpus = corpus[0]
-        length = corpus[Constants.NO_OF_SENTENCES] + len(sentences)
-        Corpus.objects(basename=processId).update(no_of_sentences=length)
+    try:
+        corpus = Corpus.objects(basename=processId)
+        if len(corpus) == 0:
+            x = datetime.datetime.now()
+            created_on = str(x.month) + '/' + str(x.day) + '/' + str(x.year) + ', ' + x.strftime("%X")
+            sentence = sentences[0]
+            corpus = Corpus(basename=processId, no_of_sentences=len(sentences), created_on=created_on,
+                            last_modified=created_on, status=Constants.IN_PROGRESS,
+                            domain=Constants.DOMAIN_LC, type=Constants.TOOL_CHAIN,
+                            source_lang=sentence[Constants.SOURCE_LANGUAGE],
+                            target_lang=sentence[Constants.TARGET_LANGUAGE])
+            corpus.save()
+        else:
+            corpus = corpus[0]
+            length = corpus[Constants.NO_OF_SENTENCES] + len(sentences)
+            Corpus.objects(basename=processId).update(no_of_sentences=length)
 
-    create_sentence_entry_for_translator(processId, sentences)
-    log.info('create_corpus_for_translator : ended for processId == ' + str(processId))
+        create_sentence_entry_for_translator(processId, sentences)
+        log.info('create_corpus_for_translator : ended for processId == ' + str(processId))
+    except Exception as e:
+        log.error('create_corpus_for_translator : error occurred for processId == ' + str(processId)
+                  + ', error is == ' + str(e))
 
 
 def create_target_sentence(sentence, filename):

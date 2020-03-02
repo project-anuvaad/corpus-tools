@@ -11,7 +11,8 @@ def get_index(target_language):
         'te': 'en-te',
         'ml': 'en-ml',
         'pa': 'en-pa',
-        'ta': 'en-ta'
+        'ta': 'en-ta',
+        'ur': 'en-ur'
     }
     return index_data[target_language]
 
@@ -46,7 +47,8 @@ def get_lang(target_language):
         'ml': 'Malayalam',
         'pa': 'Punjabi',
         'ta': 'Tamil',
-        'en': 'English'
+        'en': 'English',
+        'ur': 'Urdu'
     }
     return index_data[target_language]
 
