@@ -8,13 +8,16 @@ kafka_ip_host = 'KAFKA_IP_HOST'
 default_value = 'localhost:9092'
 local_ip = '172.17.18.200:9092'
 bootstrap_server = os.environ.get(kafka_ip_host, default_value)
+group_id = 'anuvaad'
 
 
 def get_consumer(topic):
     try:
         consumer = KafkaConsumer(
-
             bootstrap_servers=[bootstrap_server],
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            group_id=group_id,
             value_deserializer=lambda x: handle_json(x),
            )
         consumer.subscribe(topic)
