@@ -27,13 +27,14 @@ def calculate_stats():
     targetLanguage = body[Constants.TARGET_LANGUAGE]
     try:
         validation = check_file_validity(processId, sourceFiles)
+
         if validation[Constants.STATUS]:
             unique_ = set()
             index = get_index(targetLanguage)
             for file in sourceFiles:
                 base_path = Constants.BASE_PATH_MT + processId
                 file_path = base_path + '/' + file
-                data = read_csv(file_path, processId)
+                data = read_csv(file_path)
                 for text in data:
                     hash_ = get_hash(text)
                     if not unique_.__contains__(hash_):
