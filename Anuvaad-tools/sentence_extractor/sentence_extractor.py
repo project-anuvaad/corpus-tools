@@ -96,7 +96,7 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
             log.info('extract_sentences_from_paragraphs :  sentences found ' + str(len(sentences)))
             rejected_count = 0
             for sentence in sentences:
-                if len(sentence) > 800:
+                if len(sentence) > 1200:
                     all_sentences.append(sentence)
                 else:
                     rejected_count = rejected_count + 1
