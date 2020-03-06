@@ -84,7 +84,6 @@ def process(search_replaces, processId, workspace, config, file, file_count):
 
         new_target = target
         matched = False
-
         for search_replace in search_replaces:
             eng_text = search_replace[Constants.ENGLISH]
             translated_texts = search_replace[Constants.TRANSLATED]
@@ -114,13 +113,13 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                 if len(changes) == 0:
                     data = {Constants.SOURCE: source, Constants.TARGET: target}
                     not_matched.append(data)
-
+                changes.clear()
             else:
                 data = {Constants.SOURCE: source, Constants.TARGET: target}
                 not_matched.append(data)
 
         line_count = line_count + 1
-
+        log.info('process : line count  == ' + str(line_count))
     end_time = get_current_time()
     total_time = end_time - start_time
     log.info('process : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
