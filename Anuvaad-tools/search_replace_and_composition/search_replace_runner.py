@@ -63,8 +63,8 @@ def search_replace(msg):
             selected_files = message[Constants.SELECTED_FILES]
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
-            # start_search_replace(processId, workspace, configFilePath, selected_files, username,
-            #                      source_language, target_language)
+            start_search_replace(processId, workspace, configFilePath, selected_files, username,
+                                 source_language, target_language)
         elif path == Constants.WRITE_TO_FILE:
             username = message[Constants.USERNAME]
             workspace = message[Constants.TITLE]
