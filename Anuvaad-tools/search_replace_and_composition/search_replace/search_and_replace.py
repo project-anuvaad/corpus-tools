@@ -29,11 +29,11 @@ def start_search_replace(processId, workspace, configFilePath, selected_files, u
     file_count = 1
     sentences_matched_count = 0
     try:
+        file_path_not_selected = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
         for file in selected_files:
-            all_not_selected = list()
             count, not_selected = process(search_replaces, processId, workspace, config, file, file_count)
             sentences_matched_count = sentences_matched_count + count
-            all_not_selected = all_not_selected.__add__(not_selected)
+            write_to_csv(file_path_not_selected, not_selected)
             file_count = file_count + 1
         msg_ = {Constants.PATH: Constants.SEARCH_REPLACE,
                 Constants.DATA: {
@@ -55,8 +55,6 @@ def start_search_replace(processId, workspace, configFilePath, selected_files, u
             send_to_kafka(Constants.TOPIC_SEARCH_REPLACE, msg)
         else:
             send_to_kafka(Constants.EXTRACTOR_RESPONSE, msg_)
-        file_path_not_selected = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
-        write_to_csv(file_path_not_selected, all_not_selected)
 
     except Exception as e:
         log.error('start_search_replace : Error occurred while processing files, Error is ==  ' + str(e))
