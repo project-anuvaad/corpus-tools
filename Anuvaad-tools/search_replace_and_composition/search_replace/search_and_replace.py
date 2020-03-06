@@ -264,7 +264,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
 
 def update_is_written(sentences):
     for sentence in sentences:
-        SentencePair.objects(processId=sentence['processId'], hash=sentence['hash_']).update(is_written=True)
+        SentencePair.objects(processId=sentence['processId'], hash=sentence['hash']).update(is_written=True)
 
 
 def get_all_sentences(sentences):
