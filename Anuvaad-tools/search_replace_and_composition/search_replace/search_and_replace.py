@@ -83,7 +83,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
     log.info('process : started at ' + str(start_time))
     lines = readfile(processId, file)
     total_sentences = get_sentences_count(lines)
-    if total_sentences > 250000:
+    if total_sentences > 275000:
         raise Exception('more than 250000 lines')
     line_count = 1
     sentence_matched = 0
