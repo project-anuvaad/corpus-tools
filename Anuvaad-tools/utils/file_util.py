@@ -31,5 +31,6 @@ def read_csv(filepath, rows=1):
             if rows == 2:
                 data = {Constants.SOURCE: line[0], Constants.TARGET: line[1]}
                 unique.append(data)
+        source.close()
     return unique
 

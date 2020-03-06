@@ -143,6 +143,7 @@ def readfile(processId, file):
             lines = csv.reader(file)
             for line in lines:
                 data.append({'source': line[0], 'target': line[1]})
+            file.close()
             return data
     except Exception as e:
         log.info('readfile : error occurred while reading file, Error is == ' + str(e))
@@ -182,7 +183,9 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                                 target_txt.write(line[1] + '\n')
                                 final_csv_writer.writerow([line[0], line[1]])
                                 unique.add(line[0])
+                        final_csv.close()
                     unique.clear()
+                    not_matched.close()
             target_txt.close()
             source_txt.close()
         final_unique = set()
@@ -196,7 +199,8 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                     if not final_unique.__contains__(line[0]):
                         final_unique.add(line[0])
                         writer.writerow([line[0], line[1]])
-
+                final_csv_.close()
+            final_csv.close()
         sentences = SentencePair.objects(processId=processId, accepted=False)
         data.clear()
         data = get_all_sentences(sentences)
