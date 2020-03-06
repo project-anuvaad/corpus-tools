@@ -14,6 +14,7 @@ from utils.file_util import write_to_csv
 from mongo_utils.mongo_utils import create_sentence_entry_for_translator
 from elastic_utils.es_utils import update
 from utils.project_utils import get_index, get_hash, contains_english_characters, get_lang
+
 log = getLogger()
 
 
@@ -166,28 +167,38 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         source_Language = get_lang(source_Language)
         sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
         data = list()
-        while len(sentences) > 0:
-            data = data.__add__(get_all_sentences(sentences))
-            update_is_written(sentences)
-            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
-
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath_1 = base_path + Constants.FINAL_CSV
         filepath = base_path + '_' + Constants.FINAL_CSV
-        write_to_csv(filepath, data)
         source_filepath = base_path + '_english' + Constants.SOURCE_TXT
         target_filepath = base_path + '_' + target_language + Constants.TARGET_TXT
         sentence_count = 0
-        with open(source_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as source_txt:
-            with open(target_filepath, Constants.CSV_WRITE, encoding='utf-8', errors="ignore") as target_txt:
-                for line in data:
-                    sentence_count = sentence_count + 1
-                    source_txt.write(line[Constants.SOURCE] + '\n')
-                    target_txt.write(line[Constants.TARGET] + '\n')
+        unique = set()
+        log.info('write_to_file : writing matched sentences started')
+        while len(sentences) > 0:
+            data = get_all_sentences(sentences)
+            update_is_written(sentences)
+            write_to_csv(filepath, data)
+            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
+
+            with open(source_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as source_txt:
+                with open(target_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as target_txt:
+                    for line in data:
+                        if not unique.__contains__(line[Constants.SOURCE]):
+                            sentence_count = sentence_count + 1
+                            source_txt.write(line[Constants.SOURCE] + '\n')
+                            target_txt.write(line[Constants.TARGET] + '\n')
+                            unique.add(line[Constants.SOURCE])
+                target_txt.close()
+                source_txt.close()
+            data.clear()
+        log.info('write_to_file : writing matched sentences completed')
+        with open(source_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as source_txt:
+            with open(target_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as target_txt:
                 not_match_file = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId + Constants.NOT_SELECTED_CSV
                 with open(not_match_file, Constants.CSV_RT, encoding='utf-8', errors="ignore") as not_matched:
                     reader = csv.reader(not_matched)
-                    unique = set()
+
                     with open(filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as final_csv:
                         final_csv_writer = csv.writer(final_csv)
                         for line in reader:
@@ -202,6 +213,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                     not_matched.close()
             target_txt.close()
             source_txt.close()
+        log.info('write_to_file : writing not matched sentences completed')
         final_unique = set()
 
         with open(filepath, Constants.CSV_RT, encoding='utf-8', errors="ignore") as final_csv:
@@ -215,6 +227,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
                         writer.writerow([line[0], line[1]])
                 final_csv_.close()
             final_csv.close()
+        log.info('write_to_file : writing to final csv file completed')
         sentences = SentencePair.objects(processId=processId, accepted=False)
         data.clear()
         data = get_all_sentences(sentences)
@@ -268,18 +281,14 @@ def update_is_written(sentences):
 
 
 def get_all_sentences(sentences):
-    log.info('get_all_sentences : started')
     data = list()
-    unique = set()
     for sentence in sentences:
         source = sentence[Constants.SOURCE]
-        if not unique.__contains__(source):
-            res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET],
-                   Constants.HASH: sentence[Constants.HASH]}
-            data.append(res)
-            unique.add(source)
-    log.info('get_all_sentences : ended')
-    unique.clear()
+
+        res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET],
+               Constants.HASH: sentence[Constants.HASH]}
+        data.append(res)
+
     return data
 
 
@@ -305,7 +314,8 @@ def write_human_processed_corpus(processId):
                     data = {Constants.SOURCE: sentence[Constants.SOURCE], Constants.TARGET: sentence[Constants.TARGET]}
                     es_data = {Constants.SOURCE: sentence[Constants.SOURCE],
                                Constants.TARGET: sentence[Constants.TARGET],
-                               Constants.IS_TRANSLATION_COMPLETED: contains_english_characters(sentence[Constants.TARGET])
+                               Constants.IS_TRANSLATION_COMPLETED: contains_english_characters(
+                                   sentence[Constants.TARGET])
                                }
                     update(sentence[Constants.HASH], index, es_data)
                     all_sentences.append(data)

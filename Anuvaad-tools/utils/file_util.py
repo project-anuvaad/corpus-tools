@@ -17,7 +17,7 @@ def write_to_csv(filepath, data, mode=Constants.CSV_APPEND, rows=2):
                     unique.add(line[Constants.SOURCE])
                     sentence_count = sentence_count + 1
                     writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
-
+        file.close()
     return sentence_count
 
 
