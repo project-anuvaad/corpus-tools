@@ -71,10 +71,20 @@ def start_search_replace(processId, workspace, configFilePath, selected_files, u
     log.info('start_search_replace : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
 
 
+def get_sentences_count(lines):
+    count = 0
+    for line in lines:
+        count = count + 1
+    return count
+
+
 def process(search_replaces, processId, workspace, config, file, file_count):
     start_time = get_current_time()
     log.info('process : started at ' + str(start_time))
     lines = readfile(processId, file)
+    total_sentences = get_sentences_count(lines)
+    if total_sentences > 250000:
+        raise Exception('more than 250000 lines')
     line_count = 1
     sentence_matched = 0
     not_matched = list()
@@ -129,7 +139,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
 def create_entry(processId, changes, target_update, source, target, serial_no, is_alone, hash_):
     sen = SentencePair(processId=processId, changes=changes, updated=target_update, accepted=False,
                        source=source, target=target, serial_no=serial_no, in_review=False,
-                       review_completed=False, is_alone=is_alone, hash=hash_)
+                       review_completed=False, is_alone=is_alone, hash=hash_, is_written=False)
     sen.save()
 
 
@@ -154,8 +164,13 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
     try:
         target_language = get_lang(target_language)
         source_Language = get_lang(source_Language)
-        sentences = SentencePair.objects(processId=processId, accepted=True)
-        data = get_all_sentences(sentences)
+        sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(100)
+        data = list()
+        while len(sentences) > 0:
+            data = data.__add__(get_all_sentences(sentences))
+            update_is_written(sentences)
+            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(100)
+
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath_1 = base_path + Constants.FINAL_CSV
         filepath = base_path + '_' + Constants.FINAL_CSV
@@ -247,6 +262,11 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         log.info('write_to_file : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
 
 
+def update_is_written(sentences):
+    for sentence in sentences:
+        SentencePair.objects(processId=sentence['processId'], hash=sentence['hash_']).update(is_written=True)
+
+
 def get_all_sentences(sentences):
     log.info('get_all_sentences : started')
     data = list()
@@ -259,6 +279,7 @@ def get_all_sentences(sentences):
             data.append(res)
             unique.add(source)
     log.info('get_all_sentences : ended')
+    unique.clear()
     return data
 
 

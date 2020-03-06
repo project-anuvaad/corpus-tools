@@ -14,3 +14,5 @@ class SentencePair(DynamicDocument):
     update_corpus = BooleanField()
     hash = StringField()
     is_alone = BooleanField()
+    is_written = BooleanField()
+
