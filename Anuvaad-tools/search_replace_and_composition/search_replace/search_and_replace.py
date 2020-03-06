@@ -164,12 +164,12 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
     try:
         target_language = get_lang(target_language)
         source_Language = get_lang(source_Language)
-        sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(100)
+        sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
         data = list()
         while len(sentences) > 0:
             data = data.__add__(get_all_sentences(sentences))
             update_is_written(sentences)
-            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(100)
+            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
 
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath_1 = base_path + Constants.FINAL_CSV
