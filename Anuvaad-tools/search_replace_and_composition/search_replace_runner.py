@@ -71,7 +71,7 @@ def search_replace(msg):
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
 
-            write_to_file(processId, username, workspace, target_language, source_language)
+            # write_to_file(processId, username, workspace, target_language, source_language)
         elif path == Constants.HUMAN_CORRECTION:
             write_human_processed_corpus(processId)
 
