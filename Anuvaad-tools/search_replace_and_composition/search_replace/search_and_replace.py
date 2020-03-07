@@ -163,7 +163,8 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
     try:
         target_language = get_lang(target_language)
         source_Language = get_lang(source_Language)
-        sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
+        limit = 300
+        sentences = SentencePair.objects(processId=processId, accepted=True).limit(limit)
         data = list()
         base_path = Constants.BASE_PATH_TOOL_3 + processId + '/' + processId
         filepath_1 = base_path + Constants.FINAL_CSV
@@ -173,12 +174,12 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         sentence_count = 0
         unique = set()
         log.info('write_to_file : writing matched sentences started')
+        skip = limit
         while len(sentences) > 0:
             data = get_all_sentences(sentences)
-            update_is_written(sentences)
             write_to_csv(filepath, data)
-            sentences = SentencePair.objects(processId=processId, accepted=True, is_written=False).limit(400)
-
+            sentences = SentencePair.objects(processId=processId, accepted=True).skip(skip).limit(limit)
+            skip = skip + limit
             with open(source_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as source_txt:
                 with open(target_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as target_txt:
                     for line in data:
@@ -273,17 +274,12 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         log.info('write_to_file : ended at == ' + str(end_time) + ', Total time elapsed == ' + str(total_time))
 
 
-def update_is_written(sentences):
-    for sentence in sentences:
-        SentencePair.objects(processId=sentence['processId'], hash=sentence['hash']).update(is_written=True)
-
-
 def get_all_sentences(sentences):
     data = list()
     for sentence in sentences:
         source = sentence[Constants.SOURCE]
 
-        res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.TARGET],
+        res = {Constants.SOURCE: source, Constants.TARGET: sentence[Constants.UPDATED],
                Constants.HASH: sentence[Constants.HASH]}
         data.append(res)
 
