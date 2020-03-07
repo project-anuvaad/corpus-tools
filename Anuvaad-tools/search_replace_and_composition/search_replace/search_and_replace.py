@@ -178,6 +178,7 @@ def write_to_file(processId, username, workspace, target_language, source_Langua
         while len(sentences) > 0:
             data = get_all_sentences(sentences)
             write_to_csv(filepath, data)
+            log.info('write_to_file : Fetching matched sentences with skipping == ' + str(skip))
             sentences = SentencePair.objects(processId=processId, accepted=True).skip(skip).limit(limit)
             skip = skip + limit
             with open(source_filepath, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as source_txt:
