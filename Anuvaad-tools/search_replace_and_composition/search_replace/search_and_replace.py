@@ -93,39 +93,32 @@ def process(search_replaces, processId, workspace, config, file, file_count):
 
         new_target = target
         matched = False
+        changes = list()
         for search_replace in search_replaces:
             eng_text = search_replace[Constants.ENGLISH]
             translated_texts = search_replace[Constants.TRANSLATED]
             replace_text = search_replace[Constants.REPLACE]
+            hash_ = get_hash(source)
             if source.find(eng_text) > -1:
-
-                changes = list()
                 for translated_text in translated_texts:
                     if new_target.find(translated_text) > -1:
-                        if not matched:
-                            sentence_matched = sentence_matched + 1
-                            matched = True
+                        matched = True
                         new_target = new_target.replace(translated_text, replace_text)
 
                         data = {'source_search': eng_text, 'target_search': translated_text, 'replace': replace_text}
                         changes.append(data)
-                        hash_ = get_hash(source)
-                        sentences = SentencePair.objects(processId=processId, hash_=hash_)
-                        length = len(sentences)
+                        length = SentencePair.objects(processId=processId, hash=hash_).count()
 
                         if length == 0:
+                            sentence_matched = sentence_matched + 1
                             create_entry(processId, changes, new_target, source, target, 1, True, hash_)
                         else:
-                            SentencePair.objects(processId=processId, hash=hash_).update(is_alone=False)
-                            create_entry(processId, changes, new_target, source, target, length + 1, False, hash_)
-                        break
-                if len(changes) == 0:
-                    data = {Constants.SOURCE: source, Constants.TARGET: target}
-                    not_matched.append(data)
-                changes.clear()
-            else:
-                data = {Constants.SOURCE: source, Constants.TARGET: target}
-                not_matched.append(data)
+                            SentencePair.objects(processId=processId, hash=hash_)\
+                                .update(is_alone=False, changes=changes, updated=new_target)
+
+        if not matched:
+            data = {Constants.SOURCE: source, Constants.TARGET: target}
+            not_matched.append(data)
 
         line_count = line_count + 1
         log.info('process : line count  == ' + str(line_count))
