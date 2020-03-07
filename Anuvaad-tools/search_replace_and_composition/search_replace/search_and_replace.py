@@ -114,7 +114,7 @@ def process(search_replaces, processId, workspace, config, file, file_count):
                             create_entry(processId, changes, new_target, source, target, 1, True, hash_)
                         else:
                             SentencePair.objects(processId=processId, hash=hash_)\
-                                .update(is_alone=False, changes=changes, updated=new_target)
+                                .update(changes=changes, updated=new_target)
 
         if not matched:
             data = {Constants.SOURCE: source, Constants.TARGET: target}
