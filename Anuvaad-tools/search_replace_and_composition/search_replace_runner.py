@@ -1,10 +1,11 @@
 from kafka_utils.consumer import get_consumer
 from kafka_utils.producer import send_to_kafka
 from utils.anuvaad_tools_logger import getLogger
-from search_replace_and_composition.search_replace.search_and_replace import start_search_replace, write_to_file, write_human_processed_corpus
+from search_replace_and_composition.search_replace.search_and_replace import start_search_replace, write_to_file, \
+    write_human_processed_corpus
 from utils import anuvaad_constants as Constants
 from search_replace_and_composition.compositioner.composition import start_composition
-
+from mongo_utils.tool_process import ToolProcess
 
 log = getLogger()
 
@@ -52,7 +53,7 @@ def composition(msg):
 
 def search_replace(msg):
     try:
-        log.info('search_replace_and_composition : started')
+        log.info('search_replace_and_composition : started ')
         message = msg.value[Constants.DATA]
         path = msg.value[Constants.PATH]
         processId = message[Constants.SESSION_ID]
@@ -63,15 +64,32 @@ def search_replace(msg):
             selected_files = message[Constants.SELECTED_FILES]
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
-            start_search_replace(processId, workspace, configFilePath, selected_files, username,
-                                 source_language, target_language)
+            processes = ToolProcess.objects(processId=processId, status=True, type=Constants.SEARCH_REPLACE)
+            if len(processes) == 0:
+                process = ToolProcess(processId=processId, status=False, type=Constants.SEARCH_REPLACE)
+                process.save()
+                start_search_replace(processId, workspace, configFilePath, selected_files, username,
+                                     source_language, target_language)
+                ToolProcess.objects(processId=processId).update(status=True)
+            else:
+                log.info('search_replace_and_composition : process with id '
+                         + processId + ' is already completed for ' + Constants.SEARCH_REPLACE)
         elif path == Constants.WRITE_TO_FILE:
             username = message[Constants.USERNAME]
             workspace = message[Constants.TITLE]
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
+            processes = ToolProcess.objects(processId=processId, status=True, type=Constants.WRITE_TO_FILE)
+            if len(processes) == 0:
+                process = ToolProcess(processId=processId, status=False, type=Constants.WRITE_TO_FILE)
+                process.save()
+                write_to_file(processId, username, workspace, target_language, source_language)
+                ToolProcess.objects(processId=processId).update(status=True)
+            else:
+                log.info('search_replace_and_composition : process with id '
+                         + processId + ' is already completed for ' + Constants.WRITE_TO_FILE)
 
-            write_to_file(processId, username, workspace, target_language, source_language)
+
         elif path == Constants.HUMAN_CORRECTION:
             write_human_processed_corpus(processId)
 
