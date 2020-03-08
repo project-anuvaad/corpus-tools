@@ -98,11 +98,11 @@ def process(search_replaces, processId, workspace, config, file, file_count):
             translated_texts = search_replace[Constants.TRANSLATED]
             replace_text = search_replace[Constants.REPLACE]
             hash_ = get_hash(source)
-            eng_text_search = '\b' + eng_text + '\b'
-            if re.search(eng_text_search, source):
+            if re.search(r'\b{match}\b'.format(match=eng_text), source):
+
                 for translated_text in translated_texts:
-                    translated_text_search = '\b' + translated_text + '\b'
-                    if re.search(translated_text_search, new_target):
+                    if re.search(r'\b{match}\b'.format(match=translated_text), new_target):
+
                         matched = True
                         new_target = new_target.replace(translated_text, replace_text)
 
