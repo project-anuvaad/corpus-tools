@@ -4,6 +4,7 @@ from utils.config_reader import read_config_file
 import utils.anuvaad_constants as Constants
 from kafka_utils.producer import send_to_kafka
 import csv
+import re
 import hashlib
 from mongo_utils.sentence_pair import SentencePair
 from mongo_utils.sentence import Sentence
@@ -99,9 +100,11 @@ def process(search_replaces, processId, workspace, config, file, file_count):
             translated_texts = search_replace[Constants.TRANSLATED]
             replace_text = search_replace[Constants.REPLACE]
             hash_ = get_hash(source)
-            if source.find(eng_text) > -1:
+            eng_text_search = '\b' + eng_text + '\b'
+            if re.search(eng_text_search, source):
                 for translated_text in translated_texts:
-                    if new_target.find(translated_text) > -1:
+                    translated_text_search = '\b' + translated_text + '\b'
+                    if re.search(translated_text_search, new_target):
                         matched = True
                         new_target = new_target.replace(translated_text, replace_text)
 
