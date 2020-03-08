@@ -37,7 +37,7 @@ def composition(msg):
         try:
             processes = ToolProcess.objects(processId=processId, type=Constants.FILE_MERGER)
             if len(processes) == 0:
-                process = ToolProcess(processId=processId, status=False, type=Constants.SEARCH_REPLACE)
+                process = ToolProcess(processId=processId, status=False, type=Constants.FILE_MERGER)
                 process.save()
                 selected_files = message[Constants.SELECTED_FILES]
                 target_language = message[Constants.TARGET_LANGUAGE]
@@ -46,7 +46,7 @@ def composition(msg):
 
             else:
                 log.info('composition : process with id '
-                         + processId + ' is already completed for ' + Constants.SEARCH_REPLACE)
+                         + processId + ' is already completed for ' + Constants.FILE_MERGER)
 
             log.info('composition : ended')
         except Exception as e:
