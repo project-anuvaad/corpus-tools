@@ -35,13 +35,22 @@ def composition(msg):
     processId = message[Constants.SESSION_ID]
     if path == Constants.FILE_MERGER:
         try:
-            selected_files = message[Constants.SELECTED_FILES]
-            target_language = message[Constants.TARGET_LANGUAGE]
-            source_language = Constants.EN
-            start_composition(processId, selected_files, target_language, source_language)
+            processes = ToolProcess.objects(processId=processId, type=Constants.FILE_MERGER)
+            if len(processes) == 0:
+                process = ToolProcess(processId=processId, status=False, type=Constants.SEARCH_REPLACE)
+                process.save()
+                selected_files = message[Constants.SELECTED_FILES]
+                target_language = message[Constants.TARGET_LANGUAGE]
+                source_language = Constants.EN
+                start_composition(processId, selected_files, target_language, source_language)
+
+            else:
+                log.info('composition : process with id '
+                         + processId + ' is already completed for ' + Constants.SEARCH_REPLACE)
+
             log.info('composition : ended')
         except Exception as e:
-            log.error('search_replace_and_composition_thread : for composition :' +
+            log.error('composition : for composition :' +
                       ' ERROR OCCURRED ERROR is == ' + str(e))
             data = {Constants.PATH: Constants.COMPOSITION,
                     Constants.DATA: {
@@ -53,7 +62,7 @@ def composition(msg):
 
 def search_replace(msg):
     try:
-        log.info('search_replace_and_composition : started ')
+        log.info('search_replace : started ')
         message = msg.value[Constants.DATA]
         path = msg.value[Constants.PATH]
         processId = message[Constants.SESSION_ID]
@@ -64,38 +73,37 @@ def search_replace(msg):
             selected_files = message[Constants.SELECTED_FILES]
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
-            processes = ToolProcess.objects(processId=processId, status=True, type=Constants.SEARCH_REPLACE)
+            processes = ToolProcess.objects(processId=processId, type=Constants.SEARCH_REPLACE)
             if len(processes) == 0:
                 process = ToolProcess(processId=processId, status=False, type=Constants.SEARCH_REPLACE)
                 process.save()
                 start_search_replace(processId, workspace, configFilePath, selected_files, username,
                                      source_language, target_language)
-                ToolProcess.objects(processId=processId).update(status=True)
+                ToolProcess.objects(processId=processId, type=Constants.SEARCH_REPLACE).update(status=True)
             else:
-                log.info('search_replace_and_composition : process with id '
+                log.info('search_replace : process with id '
                          + processId + ' is already completed for ' + Constants.SEARCH_REPLACE)
         elif path == Constants.WRITE_TO_FILE:
             username = message[Constants.USERNAME]
             workspace = message[Constants.TITLE]
             target_language = message[Constants.TARGET_LANGUAGE]
             source_language = Constants.EN
-            processes = ToolProcess.objects(processId=processId, status=True, type=Constants.WRITE_TO_FILE)
+            processes = ToolProcess.objects(processId=processId, type=Constants.WRITE_TO_FILE)
             if len(processes) == 0:
                 process = ToolProcess(processId=processId, status=False, type=Constants.WRITE_TO_FILE)
                 process.save()
                 write_to_file(processId, username, workspace, target_language, source_language)
-                ToolProcess.objects(processId=processId).update(status=True)
+                ToolProcess.objects(processId=processId, type=Constants.WRITE_TO_FILE).update(status=True)
             else:
-                log.info('search_replace_and_composition : process with id '
+                log.info('search_replace : process with id '
                          + processId + ' is already completed for ' + Constants.WRITE_TO_FILE)
-
 
         elif path == Constants.HUMAN_CORRECTION:
             write_human_processed_corpus(processId)
 
-        log.info('search_replace_and_composition_thread : Ended for processId == ' + str(processId))
+        log.info('search_replace : Ended for processId == ' + str(processId))
     except Exception as e:
-        log.error('search_replace_and_composition_thread : ERROR OCCURRED ERROR is == ' + str(e))
+        log.error('search_replace : ERROR OCCURRED ERROR is == ' + str(e))
         data = {Constants.PATH: Constants.SEARCH_REPLACE,
                 Constants.DATA: {
                     Constants.STATUS: Constants.FAILED,

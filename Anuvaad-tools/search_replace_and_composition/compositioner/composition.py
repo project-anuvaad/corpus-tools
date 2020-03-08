@@ -17,9 +17,10 @@ def start_composition(processId, selected_file_names, target_language, source_la
         target_file_path = base_path + target_file_name
         merger_file_path = base_path + merger_file_name
         sentence_count = 0
+        file_count = 0
         for file_name in selected_file_names:
             file_path = base_path + file_name
-
+            file_count = file_count + 1
             sentences = read_csv(file_path, 2)
             sentence_count = sentence_count + write_to_csv(merger_file_path, sentences, Constants.CSV_APPEND)
 
@@ -29,7 +30,9 @@ def start_composition(processId, selected_file_names, target_language, source_la
                         sentence_count = sentence_count + 1
                         source_txt.write(line[Constants.SOURCE] + '\n')
                         target_txt.write(line[Constants.TARGET] + '\n')
-
+                target_txt.close()
+                source_txt.close()
+            log.info('start_composition : file count == ' + str(file_count))
         msg = {Constants.PATH: Constants.FILE_MERGER,
                Constants.DATA: {
                    Constants.STATUS: Constants.SUCCESS,
