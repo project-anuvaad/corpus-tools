@@ -8,6 +8,7 @@ from sentence_extractor.sentence_extractor import start_sentence_extraction
 log = getLogger()
 
 
+# this thread listen to topics for tool 1
 def tokens_and_sentences_ext_thread():
     try:
         log.info('tokens_and_sentences_ext_thread : started')
@@ -32,8 +33,6 @@ def tokens_extraction(msg):
         paragraphFilePath = message[Constants.PARAGRAPH_FILE_LOCATION]
         processId = message[Constants.SESSION_ID]
         workspace = message[Constants.TITLE]
-        # configFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/tool_1_config.yaml'
-        # paragraphFilePath = '/home/mayank/PycharmProjects/Anuvaad-tools/resources/raw_para.csv'
         start_token_extraction(configFilePath, paragraphFilePath, processId, workspace, message)
         log.info('tokens_extraction : Ended for processId == ' + str(processId))
     except Exception as e:

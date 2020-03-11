@@ -187,7 +187,10 @@ def check_and_translate(message):
                 sentence[Constants.UPDATED_DATE] = get_date_time()
                 sentence[Constants.IS_TRANSLATION_COMPLETED] = contains_english_characters(translated_sentence)
                 target_sentence = create_target_sentence(sentence, filename)
-                sentence[Constants.TARGET_SENTENCES].append(target_sentence)
+                try:
+                    sentence[Constants.TARGET_SENTENCES].append(target_sentence)
+                except Exception as e:
+                    sentence[Constants.TARGET_SENTENCES] = [target_sentence]
                 update(id_=key, index=index, body=sentence)
             log.info('check_and_translate : now trasnlating')
             translate_and_create_es(sentences, targetLanguage, filename, index)
@@ -369,9 +372,11 @@ def change_csv_filename(filename, added_name):
 
 
 def check_elastic_for_new_sentences(hashs, index):
+    log.info('check_elastic_for_new_sentences : started')
     count = 0
     already_present = 0
     hash_list = list()
+    log.info('size  == '+str(len(hashs)))
     for hash_ in hashs:
         hash_list.append(hash_)
         count = count + 1
@@ -384,4 +389,5 @@ def check_elastic_for_new_sentences(hashs, index):
         data = get_all_by_ids(hash_list, index)
         already_present = already_present + len(data.keys())
         hash_list.clear()
+    log.info('check_elastic_for_new_sentences : ended')
     return already_present

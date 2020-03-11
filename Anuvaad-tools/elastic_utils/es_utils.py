@@ -25,7 +25,7 @@ def create_sentence(sentence, index):
                                   Constants.SOURCE_SENTENCE: sentence[Constants.SOURCE_SENTENCE],
                                   Constants.HASH: sentence[Constants.HASH],
                                   Constants.TARGET_SENTENCE: sentence[Constants.TARGET_SENTENCE],
-                                  Constants.TARGET_SENTENCES: [sentence[Constants.TARGET_SENTENCES]]
+                                  Constants.TARGET_SENTENCES: sentence[Constants.TARGET_SENTENCES]
                               })
         log.info('create_sentence  : sentence created with id = ' + result[
             '_id'] + ' at index = ' + Constants.SENTENCES_INDEX)

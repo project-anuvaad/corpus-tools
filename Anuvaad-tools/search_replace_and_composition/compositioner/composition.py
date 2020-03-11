@@ -27,7 +27,6 @@ def start_composition(processId, selected_file_names, target_language, source_la
             with open(source_file_path, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as source_txt:
                 with open(target_file_path, Constants.CSV_APPEND, encoding='utf-8', errors="ignore") as target_txt:
                     for line in sentences:
-                        sentence_count = sentence_count + 1
                         source_txt.write(line[Constants.SOURCE] + '\n')
                         target_txt.write(line[Constants.TARGET] + '\n')
                 target_txt.close()

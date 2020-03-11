@@ -18,12 +18,13 @@ def write_to_csv(filepath, data, mode=Constants.CSV_APPEND, rows=2):
                     sentence_count = sentence_count + 1
                     writer.writerow([line[Constants.SOURCE], line[Constants.TARGET]])
         file.close()
+    unique.clear()
     return sentence_count
 
 
 def read_csv(filepath, rows=1):
     unique = list()
-    with open(filepath, Constants.CSV_RT) as source:
+    with open(filepath, Constants.CSV_RT, encoding='utf-8', errors="ignore") as source:
         reader = csv.reader(source)
         for line in reader:
             if rows == 1:

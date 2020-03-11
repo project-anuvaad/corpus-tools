@@ -1,8 +1,6 @@
 import time
 from datetime import datetime
 import pendulum
-import csv
-
 
 ist = pendulum.timezone('Asia/Calcutta')
 

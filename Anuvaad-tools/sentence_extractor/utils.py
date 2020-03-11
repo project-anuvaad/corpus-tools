@@ -1,6 +1,7 @@
 import utils.anuvaad_constants as CONSTANTS
 import csv
 import sys
+
 maxInt = sys.maxsize
 csv.field_size_limit(maxInt)
 
@@ -8,7 +9,7 @@ csv.field_size_limit(maxInt)
 def write_to_csv(data, processId, header, path, workspace):
     filename = workspace + '_' + header + '_' + processId + '.csv'
     complete_file_path = path + processId + '/' + filename
-    with open(complete_file_path, CONSTANTS.CSV_WRITE) as file:
+    with open(complete_file_path, CONSTANTS.CSV_WRITE, encoding='utf-8', errors="ignore") as file:
         writer = csv.writer(file)
         for line in data:
             writer.writerow([line])
@@ -18,7 +19,7 @@ def write_to_csv(data, processId, header, path, workspace):
 
 def read_from_csv(filepath):
     file_data = []
-    with open(filepath, CONSTANTS.CSV_RT) as file:
+    with open(filepath, CONSTANTS.CSV_RT, encoding='utf-8', errors="ignore") as file:
         data = csv.reader(file)
         for row in data:
             text = row[0]

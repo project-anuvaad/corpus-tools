@@ -24,14 +24,11 @@ def start_token_extraction(configFilePath, paragraphFilePath, processId, workspa
             "start_token_extraction : process started for processId == " + str(processId) + " with config name == " +
             str(config_name) + " at time == " + str(start_time))
         specific_file_header = config[Constants.SFILE_HEADER]
-        sentence_end_character = config[Constants.SEC]
         regex_rules_for_token_extraction = config[Constants.REGEX_RULES]
         token_length_max = config[Constants.TOKEN_LENGTH_MAX]
         token_length_min = config[Constants.TOKEN_LENGTH_MIN]
-        use_token_from_db = config[Constants.USE_TOKENS_FROM_DB]
         remove_negative_tokens = config[Constants.REMOVE_NEGATIVE_TOKEN]
         add_negative_tokens = config[Constants.ADD_NEGATIVE_TOKENS]
-        insertion_order = config[Constants.TOKEN_INSERTION_ORDER]
 
         tokens = extract_tokens(regex_rules_for_token_extraction,
                                 Constants.BASE_PATH_TOOL_1 + processId + '/' + paragraphFilePath)

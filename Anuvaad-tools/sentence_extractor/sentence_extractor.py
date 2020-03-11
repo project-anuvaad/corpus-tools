@@ -107,15 +107,6 @@ def extract_sentences_from_paragraphs(tokenizer, paragraphs):
     return all_sentences
 
 
-def preprocess_paragraph(text):
-    text = text.replace(' No. ', ' No.')
-    text = text.replace(' no. ', ' no.')
-    text = text.replace(' NO. ', ' NO.')
-    text = text.replace('“', ' ')
-    text = text.replace('”', ' ')
-    return text
-
-
 def load_tokenizer(tokens, config, sentence_end_characters):
     log.info('load_tokenizer : started ')
     tokenizer = get_tokenizer_english_pickle()
@@ -132,7 +123,6 @@ def load_exclusive_tokens(config):
     while i < num:
         exclusive_tokens.append(' ' + str(i))
         i = i + 1
-
     return exclusive_tokens
 
 
@@ -145,3 +135,13 @@ def load_tokens(config, posTokenFilePath, negTokenFilePath, processId):
     end_time = get_current_time()
     log.info('load_tokens : ended at ' + str(end_time))
     return tokens
+
+
+# more replace strings can also be added here for pre processing of a sentence
+def preprocess_paragraph(text):
+    text = text.replace(' No. ', ' No.')
+    text = text.replace(' no. ', ' no.')
+    text = text.replace(' NO. ', ' NO.')
+    text = text.replace('“', ' ')
+    text = text.replace('”', ' ')
+    return text

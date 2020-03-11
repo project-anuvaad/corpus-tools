@@ -1,7 +1,5 @@
 import nltk
-from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktLanguageVars
 from utils.anuvaad_tools_logger import getLogger
-from utils.timeutils import get_current_time
 
 log = getLogger()
 
@@ -22,13 +20,4 @@ def update_english_pickle_with_tokens(tokenizer, tokens, exclusive_tokens):
         tokenizer._params.abbrev_types.add(token)
     log.info('update_english_pickle_with_tokens : tokenizer updated')
     return tokenizer
-
-#
-# class BulletPointLangVars(PunktLanguageVars):
-#     sent_end_chars = ('.', '?', '!', ';')
-
-
-
-# Token Extraction
-
 
